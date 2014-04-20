@@ -1,12 +1,12 @@
 __author__ = 'victor'
 
-import redis
+from redis import StrictRedis
 import numpy
 import simpy
 import random
 import collections
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+r = StrictRedis(host='localhost', port=6379, db=0)
 
 class Cable:
     def __init__(self, env, delay):
@@ -29,6 +29,16 @@ class Link:
         self.destination = destination
         self.send_cable = send_cable
         self.receive_cable = receive_cable
+        self.id = self.get_id()
+        # Store link in database
+        self.store()
+
+    def get_id(self):
+        return r.incr("ids:links")
+
+    def store(self):
+        key = "links:" + str(self.id)
+        r.hmset(key, {"destination": self.destination, "delay": self.send_cable.delay})
 
     def send(self, value):
         self.send_cable.put(value)
@@ -45,13 +55,22 @@ class Block:
         self.miner_id = miner_id
         self.size = size
         self.valid = valid
+        # When a block is created it is stored in redis
+        self.store()
+
+    def store(self):
+        key = 'blocks:' + str(hash(self))
+        # Store the block info
+        r.hmset(key, {'prev': self.prev, 'height':self.height, 'time': self.time, 'size': self.size, 'valid': self.valid})
+        # Store reference block in the miner's blocks set
+        r.sadd("miners:" + str(self.miner_id) + ":blocks", hash(self))
 
 class Miner:
-    def __init__(self, env, id, hashrate, seed_block):
+    def __init__(self, env, hashrate, seed_block):
         # Simulation environment
         self.env = env
-        # Miner Id
-        self.id = id
+        # Get miner id from redis
+        self.id = self.get_id()
         # Miner computing percentage of total network
         self.hashrate = hashrate
         # Pointer to the block chain head
@@ -67,6 +86,18 @@ class Miner:
         # Array with links to other nodes
         self.link = None
         self.mining = None
+        # Store the miner in the database
+        self.store()
+
+    def get_id(self):
+        return r.incr("ids:miners")
+
+
+    def store(self):
+        key = "miners:" + str(self.id)
+        r.hmset(key, {"hashrate": self.hashrate})
+        r.sadd("miners", self.id)
+
 
     def start(self):
         # Add the seed_block
@@ -120,6 +151,7 @@ class Miner:
         while True:
             # Wait for a block to be mined
             block = yield self.block_mined
+            #print("Miner %d - mined block at %7.4f" %(self.id, self.env.now))
             # Interrupt the mining process so the block can be added
             self.stop_mining()
             # Add the new block to the pending ones
@@ -152,25 +184,30 @@ class Miner:
         self.blocks_new = []
 
     def announce_block(self, block):
-        print("Miner %d - announce block %d at %7.4f" % (self.id, hash(block), self.env.now))
+        #print("Miner %d - announce block %d at %7.4f" % (self.id, hash(block), self.env.now))
         self.link.send(block)
 
     def receive_events(self):
         while True:
             data = yield self.link.receive()
-            print("Miner %d - receives block %d at %7.4f" %(self.id, hash(data), self.env.now))
+            #print("Miner %d - receives block %d at %7.4f" %(self.id, hash(data), self.env.now))
 
     def add_link(self, destination, send, receive):
         self.link = Link(destination, send, receive)
+        r.sadd("miners:" + str(self.id) + ":links", self.link.id)
+
+
+# Clear redis database before new simulation starts
+r.flushdb()
 
 env = simpy.Environment()
 seed_block = Block(None, 0, env.now, -1, 0, 1)
-miner1 = Miner(env, 1, 0.1, seed_block)
-miner2 = Miner(env, 2, 0.2, seed_block)
+miner1 = Miner(env, 0.3, seed_block)
+miner2 = Miner(env, 0.7, seed_block)
 cable1 = Cable(env, 2)
 cable2 = Cable(env,2)
-miner1.add_link(1, cable1, cable2)
-miner2.add_link(2, cable2, cable1)
+miner1.add_link(miner2.id, cable1, cable2)
+miner2.add_link(miner1.id, cable2, cable1)
 
 miner1.start()
 miner2.start()
