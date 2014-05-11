@@ -4,3 +4,4 @@ lettuce==0.2.19
 simpy==3.0.4
 redis==2.9.1
 flask==0.10.1
+flask-socketio==0.3.5

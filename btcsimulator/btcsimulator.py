@@ -5,8 +5,13 @@ import numpy
 import simpy
 import random
 import collections
+import hashlib
+import pickle
 
 r = StrictRedis(host='localhost', port=6379, db=0)
+
+def sha256(data):
+    return hashlib.sha256(pickle.dumps(data)).hexdigest()
 
 class Cable:
     def __init__(self, env, delay):
@@ -70,11 +75,11 @@ class Block:
         self.store()
 
     def store(self):
-        key = 'blocks:' + str(hash(self))
+        key = 'blocks:' + str(sha256(self))
         # Store the block info
         r.hmset(key, {'prev': self.prev, 'height':self.height, 'time': self.time, 'size': self.size, 'valid': self.valid})
         # Store reference block in the miner's blocks set
-        r.sadd("miners:" + str(self.miner_id) + ":blocks", hash(self))
+        r.sadd("miners:" + str(self.miner_id) + ":blocks", sha256(self))
 
 class Miner:
 
@@ -93,6 +98,8 @@ class Miner:
         self.hashrate = hashrate
         # Miner block erification rate
         self.verifyrate = verifyrate
+        # Store seed block
+        self.seed_block = seed_block
         # Pointer to the block chain head
         self.chain_head = '*'
         # Hash with all the blocks the miner knows about
@@ -123,7 +130,7 @@ class Miner:
 
     def start(self):
         # Add the seed_block
-        self.add_block(seed_block)
+        self.add_block(self.seed_block)
         # Start the process of adding blocks
         self.env.process(self.wait_for_new_block())
         # Receive network events
@@ -143,7 +150,7 @@ class Miner:
                 yield self.env.timeout(time)
                 # Once the block is mined it needs to be added. An event is triggered
                 block = Block(self.chain_head, self.blocks[self.chain_head].height + 1, self.env.now, self.id, block_size, 1)
-                Logger.log(self.env.now, self.id, "NEW_BLOCK", hash(block))
+                Logger.log(self.env.now, self.id, "NEW_BLOCK", sha256(block))
                 self.notify_new_block(block)
             except simpy.Interrupt as i:
                 # When the mining process is interrupted it cannot continue until it is told to continue
@@ -152,29 +159,29 @@ class Miner:
     def notify_new_block(self, block):
         self.block_mined.succeed(block)
         # Create a new mining event
-        self.block_mined = env.event()
+        self.block_mined = self.env.event()
 
     def notify_received_block(self, block):
         self.block_received.succeed(block)
         # Create a new block received event
-        self.block_received = env.event()
+        self.block_received = self.env.event()
 
     def stop_mining(self):
         self.mining.interrupt()
 
     def keep_mining(self):
         self.continue_mining.succeed()
-        self.continue_mining = env.event()
+        self.continue_mining = self.env.event()
 
     def add_block(self, block):
         # Add the seed block to the known blocks
-        self.blocks[hash(block)] = block
+        self.blocks[sha256(block)] = block
         # Announce block if chain_head isn't empty
         if self.chain_head == "*":
-            self.chain_head = hash(block)
+            self.chain_head = sha256(block)
         # If block height is greater than chain head, update chain head and announce new head
         if (block.height > self.blocks[self.chain_head].height):
-            self.chain_head = hash(block)
+            self.chain_head = sha256(block)
             self.announce_block(block)
 
     def wait_for_new_block(self):
@@ -214,15 +221,15 @@ class Miner:
             if valid == 1:
                 self.add_block(block)
             elif valid == 0:
-                Logger.log(self.env.now, self.id, "NEED_DATA", hash(block))
+                Logger.log(self.env.now, self.id, "NEED_DATA", sha256(block))
                 self.request_block(block.prev)
                 blocks_later.append(block)
         self.blocks_new = blocks_later
 
     # Announce new head when block is added to the chain
     def announce_block(self, block):
-        Logger.log(self.env.now, self.id, "ANNOUNCE_BLOCK **", hash(block))
-        self.broadcast(Miner.HEAD_NEW, hash(block))
+        Logger.log(self.env.now, self.id, "ANNOUNCE_BLOCK **", sha256(block))
+        self.broadcast(Miner.HEAD_NEW, sha256(block))
 
     # Request a block to all links
     def request_block(self, block, to=None):
@@ -261,7 +268,7 @@ class Miner:
                 if data.payload in self.blocks:
                     self.send_block(data.payload, data.origin)
             elif data.action == Miner.BLOCK_RESPONSE:
-                Logger.log(self.env.now, self.id, "BLOCK_RESPONSE", hash(data.payload))
+                Logger.log(self.env.now, self.id, "BLOCK_RESPONSE", sha256(data.payload))
                 self.notify_received_block(data.payload)
             elif data.action == Miner.HEAD_NEW:
                 Logger.log(self.env.now, self.id, "HEAD_NEW", data.payload)
@@ -269,44 +276,49 @@ class Miner:
                 if data.payload not in self.blocks:
                     self.request_block(data.payload)
 
-            #print("Miner %d - receives block %d at %7.4f" %(self.id, hash(data), self.env.now))
+            #print("Miner %d - receives block %d at %7.4f" %(self.id, sha256(data), self.env.now))
 
     def add_link(self, destination, send, receive):
         self.link = Link(destination, send, receive)
         r.sadd("miners:" + str(self.id) + ":links", self.link.id)
 
+class Simulator:
 
-# Clear redis database before new simulation starts
-r.flushdb()
+    def start(self):
+        # Clear redis database before new simulation starts
+        r.flushdb()
 
-# Create simpy environment
-env = simpy.Environment()
-# Create the seed block
-seed_block = Block(None, 0, env.now, -1, 0, 1)
-# Create a bunch of miners
-miner1 = Miner(env, 0.5 * 1.0/600.0, 200*1024, seed_block)
-miner2 = Miner(env, 0.5 * 1.0/600.0, 200*1024, seed_block)
-# Connect miners. Miners have a full duplex connection, In order to simulate such
-# behaviour we need to use 2 cables
-cable1 = Cable(env, 2)
-cable2 = Cable(env,2)
-miner1.add_link(miner2.id, cable1, cable2)
-miner2.add_link(miner1.id, cable2, cable1)
+        # Create simpy environment
+        env = simpy.Environment()
+        # Create the seed block
+        seed_block = Block(None, 0, env.now, -1, 0, 1)
+        # Create a bunch of miners
+        miner1 = Miner(env, 0.5 * 1.0/600.0, 200*1024, seed_block)
+        miner2 = Miner(env, 0.5 * 1.0/600.0, 200*1024, seed_block)
+        # Connect miners. Miners have a full duplex connection, In order to simulate such
+        # behaviour we need to use 2 cables
+        cable1 = Cable(env, 2)
+        cable2 = Cable(env,2)
+        miner1.add_link(miner2.id, cable1, cable2)
+        miner2.add_link(miner1.id, cable2, cable1)
 
-# Start mining
-miner1.start()
-miner2.start()
+        # Start mining
+        miner1.start()
+        miner2.start()
 
-# Start simulation until limit
-env.run(until=10000)
+        # Start simulation until limit
+        env.run(until=10000)
+        # Notify simulation ended
+        r.publish("/btcsimulator", "simulation ended")
 
 # Print miner1 block_chain
+'''
 head = miner1.chain_head
 print("Miner 1 block has %d blocks" % len(miner1.blocks))
 i = 0
 while head is not None:
     block = miner1.blocks[head]
-    print("%d\t %d\t %d\t %d" %(i, hash(block), block.height, block.miner_id))
+    print("%d\t %s\t %d\t %d" %(i, sha256(block), block.height, block.miner_id))
     i += 1
     head = block.prev
 
@@ -316,9 +328,9 @@ print("Miner 2 block has %d blocks" % len(miner2.blocks))
 i = 0
 while head is not None:
     block = miner2.blocks[head]
-    print("%d\t %d\t %d\t %d" %(i, hash(block), block.height, block.miner_id))
+    print("%d\t %s\t %d\t %d" %(i, sha256(block), block.height, block.miner_id))
     i += 1
     head = block.prev
-
+'''
 
 
