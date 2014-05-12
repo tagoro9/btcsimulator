@@ -2,9 +2,10 @@ __author__ = 'victor'
 
 from gevent import Greenlet, monkey
 from redis import StrictRedis
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask.ext.socketio import SocketIO, emit
 from btcsimulator import Simulator
+import json
 import logging
 
 monkey.patch_all()
@@ -44,6 +45,36 @@ class RedisLiveData:
 @app.route('/')
 def index():
     return "Hello world!"
+
+@app.route('/miners', methods=['GET'])
+def miners():
+    miners = r.smembers("miners")
+    minersData = []
+    for miner in miners:
+        data = r.hgetall("miners:" + miner)
+        data['id'] = miner
+        data['blocks'] = list(r.smembers("miners:" + miner + ":blocks"))
+        data['links'] = list(r.smembers("miners:" + miner + ":links"))
+        minersData.append(data)
+    return jsonify(miners=minersData)
+
+@app.route('/chain/<string:head>')
+def chain(head):
+    data = []
+    while head != None:
+        data.append(head)
+        prev = r.hget("blocks:" + head, "prev")
+        head = prev
+    return jsonify(chain=data)
+
+@app.route('/summary')
+def summary():
+    data = dict()
+    data['miners'] = r.scard("miners")
+    data['links'] = r.scard("links")
+    data['blocks'] = r.scard("blocks")
+    return jsonify(summary=data)
+
 
 @socketio.on('my event', namespace=SIMULATOR_NAMESPACE)
 def test_message(message):

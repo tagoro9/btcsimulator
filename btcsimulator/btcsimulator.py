@@ -76,6 +76,8 @@ class Block:
 
     def store(self):
         key = 'blocks:' + str(sha256(self))
+        # Store block in block list
+        r.sadd("blocks", sha256(self))
         # Store the block info
         r.hmset(key, {'prev': self.prev, 'height':self.height, 'time': self.time, 'size': self.size, 'valid': self.valid})
         # Store reference block in the miner's blocks set
@@ -308,6 +310,9 @@ class Simulator:
 
         # Start simulation until limit
         env.run(until=10000)
+        # After simulation store every miner head, so their chain can be built again
+        r.hset("miners:" + `miner1.id`, "head", miner1.chain_head)
+        r.hset("miners:" + `miner2.id`, "head", miner2.chain_head)
         # Notify simulation ended
         r.publish("/btcsimulator", "simulation ended")
 
@@ -332,5 +337,9 @@ while head is not None:
     i += 1
     head = block.prev
 '''
+
+if __name__ == '__main__':
+    sim = Simulator()
+    sim.start()
 
 
