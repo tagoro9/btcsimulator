@@ -91,6 +91,11 @@ class Miner:
     HEAD_NEW = 3 # I have a new chain head!
     BLOCK_NEW = 4 # Just mined a new block!
 
+    # Network block rate a.k.a 1 block every ten minutes
+    BLOCK_RATE = 1.0 / 600.0
+    # A miner is able to verify 200KBytes per seconds
+    VERIFY_RATE = 200*1024
+
     def __init__(self, env, hashrate, verifyrate, seed_block):
         # Simulation environment
         self.env = env
@@ -284,62 +289,46 @@ class Miner:
         self.link = Link(destination, send, receive)
         r.sadd("miners:" + str(self.id) + ":links", self.link.id)
 
+    @staticmethod
+    def connect(env, miner, other_miner):
+        # Connect miners. Miners have a full duplex connection, In order to simulate such
+        # behaviour we need to use 2 cables
+        cable1 = Cable(env, 2)
+        cable2 = Cable(env, 2)
+        miner.add_link(other_miner.id, cable1, cable2)
+        other_miner.add_link(miner.id, cable2, cable1)
+
+
 class Simulator:
 
-    def start(self):
+    def standard(self, miners_number=20, time=100000):
         # Clear redis database before new simulation starts
         r.flushdb()
-
         # Create simpy environment
         env = simpy.Environment()
         # Create the seed block
         seed_block = Block(None, 0, env.now, -1, 0, 1)
-        # Create a bunch of miners
-        miner1 = Miner(env, 0.5 * 1.0/600.0, 200*1024, seed_block)
-        miner2 = Miner(env, 0.5 * 1.0/600.0, 200*1024, seed_block)
-        # Connect miners. Miners have a full duplex connection, In order to simulate such
-        # behaviour we need to use 2 cables
-        cable1 = Cable(env, 2)
-        cable2 = Cable(env,2)
-        miner1.add_link(miner2.id, cable1, cable2)
-        miner2.add_link(miner1.id, cable2, cable1)
-
-        # Start mining
-        miner1.start()
-        miner2.start()
-
-        # Start simulation until limit
-        env.run(until=10000)
+        hashrates = numpy.random.dirichlet(numpy.ones(miners_number), size=1)
+        # Create miners
+        miners = []
+        for i in range(0, miners_number):
+            miners.append(Miner(env, hashrates[0,i] * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block))
+        # Randomly connect miners
+        for i, miner in enumerate(miners):
+            connections = numpy.random.choice([True, False], miners_number)
+            for j, connection in enumerate(connections):
+                if i != j and connection == True:
+                    Miner.connect(env, miner, miners[j])
+        for miner in miners: miner.start()
+        # Start simulation until limit. Time unit is seconds
+        env.run(until=time)
         # After simulation store every miner head, so their chain can be built again
-        r.hset("miners:" + `miner1.id`, "head", miner1.chain_head)
-        r.hset("miners:" + `miner2.id`, "head", miner2.chain_head)
+        for miner in miners: r.hset("miners:" + `miner.id`, "head", miner.chain_head)
         # Notify simulation ended
         r.publish("/btcsimulator", "simulation ended")
 
-# Print miner1 block_chain
-'''
-head = miner1.chain_head
-print("Miner 1 block has %d blocks" % len(miner1.blocks))
-i = 0
-while head is not None:
-    block = miner1.blocks[head]
-    print("%d\t %s\t %d\t %d" %(i, sha256(block), block.height, block.miner_id))
-    i += 1
-    head = block.prev
-
-# Print miner1 block_chain
-head = miner2.chain_head
-print("Miner 2 block has %d blocks" % len(miner2.blocks))
-i = 0
-while head is not None:
-    block = miner2.blocks[head]
-    print("%d\t %s\t %d\t %d" %(i, sha256(block), block.height, block.miner_id))
-    i += 1
-    head = block.prev
-'''
-
 if __name__ == '__main__':
     sim = Simulator()
-    sim.start()
+    sim.standard(20, 10000)
 
 

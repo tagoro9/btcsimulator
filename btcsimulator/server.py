@@ -84,7 +84,7 @@ def test_message(message):
 def start(message):
     sim = Simulator()
     emit('log', {'data': message}, broadcast=True)
-    sim.start()
+    sim.standard()
 
 
 @socketio.on('connect', namespace=SIMULATOR_NAMESPACE)
