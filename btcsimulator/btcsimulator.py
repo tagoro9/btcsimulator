@@ -4,12 +4,14 @@ from redis import StrictRedis
 from redis import ConnectionError
 import numpy
 import simpy
+from simpy.events import AnyOf
 import random
 import collections
 import hashlib
 import pickle
 import sys
 from datetime import timedelta
+import time
 
 r = StrictRedis(host='localhost', port=6379, db=0)
 
@@ -58,7 +60,8 @@ class Link:
 class Logger:
     @staticmethod
     def log(time, miner, message, block):
-        print("#%7.4f\t\tMiner %d\t\t%s\t%s" %(time, miner, message.ljust(20, ' '), block))
+        if 1 == 2:
+            print("#%7.4f\t\tMiner %d\t\t%s\t%s" %(time, miner, message.ljust(20, ' '), block))
 
 class Event:
     def __init__(self, destination, origin, time, action, payload):
@@ -74,13 +77,14 @@ class Event:
         return RedisUtils.get_id("events")
 
     def store(self):
-        key = "events:" + `self.id`
+        key = "events:" + repr(self.id)
         # Store event
         r.hmset(key, {"destination": self.destination, "origin": self.origin, "action": self.action, "payload": self.payload, "time": self.time})
         day = TimeUtils.days_passed(self.time)
-        r.zadd("days:" + `day` + ":" + `self.action`, self.time, self.id)
-        r.zadd("days:" + `day`, self.time, self.id)
-        r.zadd("miners:" + `self.origin` + ":events", self.time, self.id)
+        r.zadd("events", self.time, self.id)
+        r.zadd("days:" + repr(day) + ":events:" + repr(self.action), self.time, self.id)
+        r.zadd("days:" + repr(day) + ":events", self.time, self.id)
+        r.zadd("miners:" + repr(self.origin) + ":events", self.time, self.id)
 
 class Block:
     def __init__(self, prev, height, time, miner_id, size, valid):
@@ -100,7 +104,7 @@ class Block:
         # Store the block info
         r.hmset(key, {'prev': self.prev, 'height':self.height, 'time': self.time, 'size': self.size, 'valid': self.valid})
         # Store reference block in the miner's blocks set
-        r.sadd("miners:" + str(self.miner_id) + ":blocks", sha256(self))
+        r.sadd("miners:" + str(self.miner_id) + ":blocks-mined", sha256(self))
 
 class Miner:
 
@@ -143,6 +147,7 @@ class Miner:
         self.mining = None
         # Store the miner in the database
         self.store()
+        self.total_blocks = 0
 
     def get_id(self):
         return RedisUtils.get_id("miners")
@@ -182,6 +187,8 @@ class Miner:
                 yield self.continue_mining
 
     def notify_new_block(self, block):
+        self.total_blocks += 1
+        #print("%d \tI just mined a block at %7.4f" % (self.id, self.env.now))
         self.block_mined.succeed(block)
         # Create a new mining event
         self.block_mined = self.env.event()
@@ -201,6 +208,8 @@ class Miner:
     def add_block(self, block):
         # Add the seed block to the known blocks
         self.blocks[sha256(block)] = block
+        # Store the block in redis
+        r.sadd("miners:" + str(self.id) + ":blocks", sha256(block))
         # Announce block if chain_head isn't empty
         if self.chain_head == "*":
             self.chain_head = sha256(block)
@@ -215,12 +224,13 @@ class Miner:
             blocks = yield self.block_mined | self.block_received
             # Interrupt the mining process so the block can be added
             self.stop_mining()
+            #print("%d \tI stop mining" % self.id)
             for event, block in blocks.items():
                 #print("Miner %d - mined block at %7.4f" %(self.id, self.env.now))
                 # Add the new block to the pending ones
                 self.blocks_new.append(block)
                 # Process new blocks
-                yield self.env.process(self.process_new_blocks())
+            yield self.env.process(self.process_new_blocks())
             # Keep mining
             self.keep_mining()
 
@@ -246,7 +256,7 @@ class Miner:
             if valid == 1:
                 self.add_block(block)
             elif valid == 0:
-                Logger.log(self.env.now, self.id, "NEED_DATA", sha256(block))
+                #Logger.log(self.env.now, self.id, "NEED_DATA", sha256(block))
                 self.request_block(block.prev)
                 blocks_later.append(block)
         self.blocks_new = blocks_later
@@ -258,7 +268,7 @@ class Miner:
 
     # Request a block to all links
     def request_block(self, block, to=None):
-        Logger.log(self.env.now, self.id, "REQUEST", block)
+        #Logger.log(self.env.now, self.id, "REQUEST", block)
         if to is None:
             self.broadcast(Miner.BLOCK_REQUEST, block)
         else:
@@ -287,8 +297,9 @@ class Miner:
             # Wait for a network event
             if len(self.links) == 0:
                 return
-            for to in self.links:
-                data = yield self.links[to].receive()
+            events = [self.links[to].receive() for to in self.links]
+            received_events = yield AnyOf(self.env, events)
+            for event, data in received_events.items():
                 if data.action == Miner.BLOCK_REQUEST:
                     Logger.log(self.env.now, self.id, "BLOCK_REQUEST", data.payload)
                     # Send block if we have it
@@ -314,8 +325,8 @@ class Miner:
     def connect(env, miner, other_miner):
         # Connect miners. Miners have a full duplex connection, In order to simulate such
         # behaviour we need to use 2 cables
-        cable1 = Cable(env, 2)
-        cable2 = Cable(env, 2)
+        cable1 = Cable(env, 0.02)
+        cable2 = Cable(env, 0.02)
         miner.add_link(other_miner.id, cable1, cable2)
         other_miner.add_link(miner.id, cable2, cable1)
 
@@ -337,7 +348,7 @@ class RedisUtils:
 
     @staticmethod
     def configure_event_names():
-        r.sadd("events", Miner.BLOCK_REQUEST, Miner.BLOCK_RESPONSE, Miner.BLOCK_NEW, Miner.HEAD_NEW)
+        r.sadd("events:types", Miner.BLOCK_REQUEST, Miner.BLOCK_RESPONSE, Miner.BLOCK_NEW, Miner.HEAD_NEW)
 
     @staticmethod
     def store_days(days):
@@ -349,7 +360,7 @@ class Simulator:
 
     def standard(self, miners_number=20, days=10):
         # Convert simulation days to seconds
-        time = TimeUtils.get_seconds(days)
+        simulation_time = TimeUtils.get_seconds(days)
         try:
             # Clear redis database before new simulation starts
             r.flushdb()
@@ -381,18 +392,22 @@ class Simulator:
                     connections[miners[j]][i] = True
                     Miner.connect(env, miner, miners[j])
         for miner in miners: miner.start()
+        start = time.time()
         # Start simulation until limit. Time unit is seconds
-        env.run(until=time)
+        env.run(until=simulation_time)
+        end = time.time()
+        print("Simulation took: %1.4f seconds" % (end - start))
+
         # Store in redis simulation days
         RedisUtils.store_days(days)
         # After simulation store every miner head, so their chain can be built again
-        for miner in miners: r.hset("miners:" + `miner.id`, "head", miner.chain_head)
+        for miner in miners: r.hset("miners:" + repr(miner.id), "head", miner.chain_head)
         # Notify simulation ended
         r.publish("/btcsimulator", "simulation ended")
         return 0
 
 if __name__ == '__main__':
     sim = Simulator()
-    sim.standard(4, 1)
+    sim.standard(3, 10)
 
 
