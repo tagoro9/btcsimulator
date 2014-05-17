@@ -4,7 +4,7 @@ from redis import StrictRedis
 from redis import ConnectionError
 import numpy
 import simpy
-from simpy.events import AnyOf
+from simpy.events import AnyOf, AllOf
 import random
 import collections
 import hashlib
@@ -35,7 +35,8 @@ class Cable:
         return self.store.get()
 
 class Link:
-    def __init__(self, destination, send_cable, receive_cable):
+    def __init__(self, origin, destination, send_cable, receive_cable):
+        self.origin = origin
         self.destination = destination
         self.send_cable = send_cable
         self.receive_cable = receive_cable
@@ -49,7 +50,7 @@ class Link:
     def store(self):
         key = "links:" + str(self.id)
         r.sadd("links", self.id)
-        r.hmset(key, {"destination": self.destination, "delay": self.send_cable.delay})
+        r.hmset(key, {"destination": self.destination, "delay": self.send_cable.delay, 'origin': self.origin})
 
     def send(self, value):
         self.send_cable.put(value)
@@ -59,8 +60,8 @@ class Link:
 
 class Logger:
     @staticmethod
-    def log(time, miner, message, block):
-        if 1 == 2:
+    def log(time, miner, message, block, show=2):
+        if 1 == show:
             print("#%7.4f\t\tMiner %d\t\t%s\t%s" %(time, miner, message.ljust(20, ' '), block))
 
 class Event:
@@ -79,7 +80,10 @@ class Event:
     def store(self):
         key = "events:" + repr(self.id)
         # Store event
-        r.hmset(key, {"destination": self.destination, "origin": self.origin, "action": self.action, "payload": self.payload, "time": self.time})
+        data = {"destination": self.destination, "origin": self.origin, "action": self.action, "payload": self.payload, "time": self.time}
+        if isinstance(self.payload, Block):
+            data['payload'] = sha256(self.payload)
+        r.hmset(key, data)
         day = TimeUtils.days_passed(self.time)
         r.zadd("events", self.time, self.id)
         r.zadd("days:" + repr(day) + ":events:" + repr(self.action), self.time, self.id)
@@ -100,11 +104,11 @@ class Block:
     def store(self):
         key = 'blocks:' + str(sha256(self))
         # Store block in block list
-        r.sadd("blocks", sha256(self))
+        r.zadd("blocks", self.height, sha256(self))
         # Store the block info
-        r.hmset(key, {'prev': self.prev, 'height':self.height, 'time': self.time, 'size': self.size, 'valid': self.valid})
+        r.hmset(key, {'prev': self.prev, 'height':self.height, 'time': self.time, 'size': self.size, 'valid': self.valid, 'miner': self.miner_id})
         # Store reference block in the miner's blocks set
-        r.sadd("miners:" + str(self.miner_id) + ":blocks-mined", sha256(self))
+        r.zadd("miners:" + str(self.miner_id) + ":blocks-mined", self.height, sha256(self))
 
 class Miner:
 
@@ -113,6 +117,7 @@ class Miner:
     BLOCK_RESPONSE = 2 # Here is the block you wanted!
     HEAD_NEW = 3 # I have a new chain head!
     BLOCK_NEW = 4 # Just mined a new block!
+    ACK = 5 # ACK message with no data
 
     # Network block rate a.k.a 1 block every ten minutes
     BLOCK_RATE = 1.0 / 600.0
@@ -154,7 +159,7 @@ class Miner:
 
     def store(self):
         key = "miners:" + str(self.id)
-        r.hmset(key, {"hashrate": self.hashrate, "verifyrate": self.verifyrate})
+        r.hmset(key, {"hashrate": self.hashrate / Miner.BLOCK_RATE, "verifyrate": self.verifyrate})
         r.sadd("miners", self.id)
 
 
@@ -209,7 +214,7 @@ class Miner:
         # Add the seed block to the known blocks
         self.blocks[sha256(block)] = block
         # Store the block in redis
-        r.sadd("miners:" + str(self.id) + ":blocks", sha256(block))
+        r.zadd("miners:" + str(self.id) + ":blocks", block.height, sha256(block))
         # Announce block if chain_head isn't empty
         if self.chain_head == "*":
             self.chain_head = sha256(block)
@@ -281,6 +286,9 @@ class Miner:
         # Send the event
         self.send_event(to, Miner.BLOCK_RESPONSE, block)
 
+    def send_ack(self, to):
+        self.send_event(to, Miner.ACK, "")
+
     # Send certain event to a specific miner
     def send_event(self, to, action, payload):
         event = Event(to, self.id, self.env.now, action, payload)
@@ -305,6 +313,9 @@ class Miner:
                     # Send block if we have it
                     if data.payload in self.blocks:
                         self.send_block(data.payload, data.origin)
+                    # Otherwise send ACK
+                    else:
+                        self.send_ack(data.origin)
                 elif data.action == Miner.BLOCK_RESPONSE:
                     Logger.log(self.env.now, self.id, "BLOCK_RESPONSE", sha256(data.payload))
                     self.notify_received_block(data.payload)
@@ -313,11 +324,14 @@ class Miner:
                     # If we don't have the new head, we need to request it
                     if data.payload not in self.blocks:
                         self.request_block(data.payload)
+                    # Otherwise send ack
+                    else:
+                        self.send_ack(data.origin)
 
             #print("Miner %d - receives block %d at %7.4f" %(self.id, sha256(data), self.env.now))
 
     def add_link(self, destination, send, receive):
-        link = Link(destination, send, receive)
+        link = Link(self.id, destination, send, receive)
         self.links[destination] = link
         r.sadd("miners:" + str(self.id) + ":links", link.id)
 
@@ -397,7 +411,6 @@ class Simulator:
         env.run(until=simulation_time)
         end = time.time()
         print("Simulation took: %1.4f seconds" % (end - start))
-
         # Store in redis simulation days
         RedisUtils.store_days(days)
         # After simulation store every miner head, so their chain can be built again
@@ -408,6 +421,6 @@ class Simulator:
 
 if __name__ == '__main__':
     sim = Simulator()
-    sim.standard(3, 10)
+    sim.standard(3, 1)
 
 
