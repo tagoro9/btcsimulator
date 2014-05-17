@@ -1,12 +1,15 @@
 __author__ = 'victor'
 
 from redis import StrictRedis
+from redis import ConnectionError
 import numpy
 import simpy
 import random
 import collections
 import hashlib
 import pickle
+import sys
+from datetime import timedelta
 
 r = StrictRedis(host='localhost', port=6379, db=0)
 
@@ -39,10 +42,11 @@ class Link:
         self.store()
 
     def get_id(self):
-        return r.incr("ids:links")
+        return RedisUtils.get_id("links")
 
     def store(self):
         key = "links:" + str(self.id)
+        r.sadd("links", self.id)
         r.hmset(key, {"destination": self.destination, "delay": self.send_cable.delay})
 
     def send(self, value):
@@ -57,11 +61,26 @@ class Logger:
         print("#%7.4f\t\tMiner %d\t\t%s\t%s" %(time, miner, message.ljust(20, ' '), block))
 
 class Event:
-    def __init__(self, destination, origin, action, payload):
+    def __init__(self, destination, origin, time, action, payload):
         self.destination = destination
         self.origin = origin
         self.action = action
         self.payload = payload
+        self.time = time
+        self.id = self.get_id()
+        self.store()
+
+    def get_id(self):
+        return RedisUtils.get_id("events")
+
+    def store(self):
+        key = "events:" + `self.id`
+        # Store event
+        r.hmset(key, {"destination": self.destination, "origin": self.origin, "action": self.action, "payload": self.payload, "time": self.time})
+        day = TimeUtils.days_passed(self.time)
+        r.zadd("days:" + `day` + ":" + `self.action`, self.time, self.id)
+        r.zadd("days:" + `day`, self.time, self.id)
+        r.zadd("miners:" + `self.origin` + ":events", self.time, self.id)
 
 class Block:
     def __init__(self, prev, height, time, miner_id, size, valid):
@@ -120,14 +139,13 @@ class Miner:
         # Create event to notify when the mining process can continue
         self.continue_mining = env.event()
         # Array with links to other nodes
-        self.link = None
+        self.links = dict()
         self.mining = None
         # Store the miner in the database
         self.store()
 
     def get_id(self):
-        return r.incr("ids:miners")
-
+        return RedisUtils.get_id("miners")
 
     def store(self):
         key = "miners:" + str(self.id)
@@ -241,7 +259,6 @@ class Miner:
     # Request a block to all links
     def request_block(self, block, to=None):
         Logger.log(self.env.now, self.id, "REQUEST", block)
-        event = Event(self.link.destination, self.id, Miner.BLOCK_REQUEST, block)
         if to is None:
             self.broadcast(Miner.BLOCK_REQUEST, block)
         else:
@@ -256,38 +273,42 @@ class Miner:
 
     # Send certain event to a specific miner
     def send_event(self, to, action, payload):
-        event = Event(to, self.id, action, payload)
-        self.link.send(event)
+        event = Event(to, self.id, self.env.now, action, payload)
+        self.links[to].send(event)
 
     # Broadcast an event to all links
     def broadcast(self, action, payload):
-        event = Event(self.link.destination, self.id, action, payload)
-        self.link.send(event)
+        for to in self.links:
+            event = Event(to, self.id, self.env.now, action, payload)
+            self.links[to].send(event)
 
     def receive_events(self):
         while True:
-            # Wait for a network or internal event
-            data = yield self.link.receive()
-            # Process all events in the dictionary. There will only be 2 events if they are triggered at the same time
-            if data.action == Miner.BLOCK_REQUEST:
-                Logger.log(self.env.now, self.id, "BLOCK_REQUEST", data.payload)
-                # Send block if we have it
-                if data.payload in self.blocks:
-                    self.send_block(data.payload, data.origin)
-            elif data.action == Miner.BLOCK_RESPONSE:
-                Logger.log(self.env.now, self.id, "BLOCK_RESPONSE", sha256(data.payload))
-                self.notify_received_block(data.payload)
-            elif data.action == Miner.HEAD_NEW:
-                Logger.log(self.env.now, self.id, "HEAD_NEW", data.payload)
-                # If we don't have the new head, we need to request it
-                if data.payload not in self.blocks:
-                    self.request_block(data.payload)
+            # Wait for a network event
+            if len(self.links) == 0:
+                return
+            for to in self.links:
+                data = yield self.links[to].receive()
+                if data.action == Miner.BLOCK_REQUEST:
+                    Logger.log(self.env.now, self.id, "BLOCK_REQUEST", data.payload)
+                    # Send block if we have it
+                    if data.payload in self.blocks:
+                        self.send_block(data.payload, data.origin)
+                elif data.action == Miner.BLOCK_RESPONSE:
+                    Logger.log(self.env.now, self.id, "BLOCK_RESPONSE", sha256(data.payload))
+                    self.notify_received_block(data.payload)
+                elif data.action == Miner.HEAD_NEW:
+                    Logger.log(self.env.now, self.id, "HEAD_NEW", data.payload)
+                    # If we don't have the new head, we need to request it
+                    if data.payload not in self.blocks:
+                        self.request_block(data.payload)
 
             #print("Miner %d - receives block %d at %7.4f" %(self.id, sha256(data), self.env.now))
 
     def add_link(self, destination, send, receive):
-        self.link = Link(destination, send, receive)
-        r.sadd("miners:" + str(self.id) + ":links", self.link.id)
+        link = Link(destination, send, receive)
+        self.links[destination] = link
+        r.sadd("miners:" + str(self.id) + ":links", link.id)
 
     @staticmethod
     def connect(env, miner, other_miner):
@@ -298,12 +319,44 @@ class Miner:
         miner.add_link(other_miner.id, cable1, cable2)
         other_miner.add_link(miner.id, cable2, cable1)
 
+class TimeUtils:
+
+    @staticmethod
+    def days_passed(seconds):
+        return timedelta(seconds=seconds).days
+
+    @staticmethod
+    def get_seconds(days):
+        return days*24*3600
+
+class RedisUtils:
+
+    @staticmethod
+    def get_id(key):
+        return r.incr("ids:" + key)
+
+    @staticmethod
+    def configure_event_names():
+        r.sadd("events", Miner.BLOCK_REQUEST, Miner.BLOCK_RESPONSE, Miner.BLOCK_NEW, Miner.HEAD_NEW)
+
+    @staticmethod
+    def store_days(days):
+        seq = range(0,days)
+        for i in seq:
+            r.sadd("days", i)
 
 class Simulator:
 
-    def standard(self, miners_number=20, time=100000):
-        # Clear redis database before new simulation starts
-        r.flushdb()
+    def standard(self, miners_number=20, days=10):
+        # Convert simulation days to seconds
+        time = TimeUtils.get_seconds(days)
+        try:
+            # Clear redis database before new simulation starts
+            r.flushdb()
+        except ConnectionError:
+            return -1
+        # Store in redis the simulation event names
+        RedisUtils.configure_event_names()
         # Create simpy environment
         env = simpy.Environment()
         # Create the seed block
@@ -311,24 +364,35 @@ class Simulator:
         hashrates = numpy.random.dirichlet(numpy.ones(miners_number), size=1)
         # Create miners
         miners = []
+        # This dict is used to store the connections between miners, so they are not created twice
+        connections = dict()
         for i in range(0, miners_number):
-            miners.append(Miner(env, hashrates[0,i] * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block))
+            miner = Miner(env, hashrates[0,i] * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block)
+            miners.append(miner)
+            connections[miner] = dict()
         # Randomly connect miners
         for i, miner in enumerate(miners):
-            connections = numpy.random.choice([True, False], miners_number)
-            for j, connection in enumerate(connections):
-                if i != j and connection == True:
+            miner_connections = numpy.random.choice([True, False], miners_number)
+            for j, miner_connection in enumerate(miner_connections):
+                # Onlye create connection if miner is not self and connection does not already exist
+                if i != j and miner_connection == True and j not in connections[miner] and i not in connections[miners[j]]:
+                    # Store connection so its not created twice
+                    connections[miner][j] = True
+                    connections[miners[j]][i] = True
                     Miner.connect(env, miner, miners[j])
         for miner in miners: miner.start()
         # Start simulation until limit. Time unit is seconds
         env.run(until=time)
+        # Store in redis simulation days
+        RedisUtils.store_days(days)
         # After simulation store every miner head, so their chain can be built again
         for miner in miners: r.hset("miners:" + `miner.id`, "head", miner.chain_head)
         # Notify simulation ended
         r.publish("/btcsimulator", "simulation ended")
+        return 0
 
 if __name__ == '__main__':
     sim = Simulator()
-    sim.standard(20, 10000)
+    sim.standard(4, 1)
 
 
