@@ -1,0 +1,73 @@
+<!DOCTYPE html><html><head><title>business-page-view.coffee</title><meta http-equiv="Content-Type" content="text/html" charset="UTF-8"><link rel="stylesheet" media="all" href="../../../docco.css"></head><body><div id="container"><div id="background"></div><div id="jump_to">Jump To &hellip;<div id="jump_wrapper"><div id="jump_page"><a href="../../../index.html" class="source"><span class="file_name">README</span></a><a href="../../../Gruntfile.coffee.html" class="source "><span class="base_path">. / </span><span class="file_name">Gruntfile.coffee</span></a><a href="../../../app/views/session/login-page-view.coffee.html" class="source "><span class="base_path">app / views / session / </span><span class="file_name">login-page-view.coffee</span></a><a href="../../../app/views/home/business-page-view.coffee.html" class="source selected"><span class="base_path">app / views / home / </span><span class="file_name">business-page-view.coffee</span></a><a href="../../../app/views/home/offers-page-view.coffee.html" class="source "><span class="base_path">app / views / home / </span><span class="file_name">offers-page-view.coffee</span></a><a href="../../../app/views/layout/site-view.coffee.html" class="source "><span class="base_path">app / views / layout / </span><span class="file_name">site-view.coffee</span></a><a href="../../../app/views/layout/header-view.coffee.html" class="source "><span class="base_path">app / views / layout / </span><span class="file_name">header-view.coffee</span></a><a href="../../../app/views/layout/footer-view.coffee.html" class="source "><span class="base_path">app / views / layout / </span><span class="file_name">footer-view.coffee</span></a><a href="../../../app/views/base/view.coffee.html" class="source "><span class="base_path">app / views / base / </span><span class="file_name">view.coffee</span></a><a href="../../../app/views/base/collection-view.coffee.html" class="source "><span class="base_path">app / views / base / </span><span class="file_name">collection-view.coffee</span></a><a href="../../../app/models/town.coffee.html" class="source "><span class="base_path">app / models / </span><span class="file_name">town.coffee</span></a><a href="../../../app/models/offer.coffee.html" class="source "><span class="base_path">app / models / </span><span class="file_name">offer.coffee</span></a><a href="../../../app/models/country.coffee.html" class="source "><span class="base_path">app / models / </span><span class="file_name">country.coffee</span></a><a href="../../../app/models/state.coffee.html" class="source "><span class="base_path">app / models / </span><span class="file_name">state.coffee</span></a><a href="../../../app/models/business.coffee.html" class="source "><span class="base_path">app / models / </span><span class="file_name">business.coffee</span></a><a href="../../../app/models/base/collection.coffee.html" class="source "><span class="base_path">app / models / base / </span><span class="file_name">collection.coffee</span></a><a href="../../../app/models/base/model.coffee.html" class="source "><span class="base_path">app / models / base / </span><span class="file_name">model.coffee</span></a><a href="../../../app/models/base/pageable-collection.coffee.html" class="source "><span class="base_path">app / models / base / </span><span class="file_name">pageable-collection.coffee</span></a><a href="../../../app/routes.coffee.html" class="source "><span class="base_path">app / </span><span class="file_name">routes.coffee</span></a><a href="../../../app/lib/view-helper.coffee.html" class="source "><span class="base_path">app / lib / </span><span class="file_name">view-helper.coffee</span></a><a href="../../../app/lib/utils.coffee.html" class="source "><span class="base_path">app / lib / </span><span class="file_name">utils.coffee</span></a><a href="../../../app/lib/live-edit/live-edit.coffee.html" class="source "><span class="base_path">app / lib / live-edit / </span><span class="file_name">live-edit.coffee</span></a><a href="../../../app/config.coffee.html" class="source "><span class="base_path">app / </span><span class="file_name">config.coffee</span></a><a href="../../../app/initialize.coffee.html" class="source "><span class="base_path">app / </span><span class="file_name">initialize.coffee</span></a><a href="../../../app/application.coffee.html" class="source "><span class="base_path">app / </span><span class="file_name">application.coffee</span></a><a href="../../../app/controllers/session-controller.coffee.html" class="source "><span class="base_path">app / controllers / </span><span class="file_name">session-controller.coffee</span></a><a href="../../../app/controllers/base/controller.coffee.html" class="source "><span class="base_path">app / controllers / base / </span><span class="file_name">controller.coffee</span></a><a href="../../../app/controllers/home-controller.coffee.html" class="source "><span class="base_path">app / controllers / </span><span class="file_name">home-controller.coffee</span></a><a href="../../../config.coffee.html" class="source "><span class="base_path">. / </span><span class="file_name">config.coffee</span></a></div></div></div><table cellpadding="0" cellspacing="0"><thead><tr><th class="docs"><h1>business-page-view.coffee</h1><div class="filepath">app/views/home/</div></th><th class="code"></th></tr></thead><tbody><tr id="section-1"><td class="docs"><div class="pilwrap"><a href="#section-1" class="pilcrow">&#182;</a></div>
+</td><td class="code"><div class="highlight"><pre><span class="nv">template = </span><span class="nx">require</span> <span class="s">&#39;views/templates/home/business&#39;</span>
+<span class="nv">View = </span><span class="nx">require</span> <span class="s">&#39;views/base/view&#39;</span>
+
+<span class="nv">module.exports = </span><span class="k">class</span> <span class="nx">BusinessPageView</span> <span class="k">extends</span> <span class="nx">View</span>
+  <span class="nv">className: </span><span class="s">&#39;business-page&#39;</span>
+  <span class="nv">template: </span><span class="nx">template</span>
+  <span class="nv">autoRender: </span><span class="kc">true</span>
+  <span class="nv">autoAttach: </span><span class="kc">true</span>
+  <span class="nv">bindings: </span>
+      <span class="s">&#39;#business-name&#39;</span><span class="o">:</span> <span class="s">&#39;name&#39;</span>
+      <span class="s">&#39;#business-country&#39;</span> <span class="o">:</span> 
+            <span class="nv">observe: </span><span class="s">&#39;country_id&#39;</span>
+            <span class="nv">onGet: </span><span class="s">&#39;formatName&#39;</span>
+      <span class="s">&#39;#business-state&#39;</span> <span class="o">:</span> 
+            <span class="nv">observe: </span><span class="s">&#39;state_id&#39;</span>
+            <span class="nv">onGet: </span><span class="s">&#39;formatName&#39;</span>
+      <span class="s">&#39;#business-town&#39;</span> <span class="o">:</span> 
+            <span class="nv">oberve: </span><span class="s">&#39;town_id&#39;</span>
+            <span class="nv">onGet: </span><span class="s">&#39;formatName&#39;</span>
+      <span class="s">&#39;#business-zip&#39;</span> <span class="o">:</span> <span class="s">&#39;zip_code&#39;</span>
+      <span class="s">&#39;#business-address&#39;</span> <span class="o">:</span> <span class="s">&#39;address&#39;</span>
+      <span class="s">&#39;#business-telephone&#39;</span> <span class="o">:</span> <span class="s">&#39;telephone&#39;</span>
+      <span class="s">&#39;#business-email&#39;</span> <span class="o">:</span> <span class="s">&#39;email&#39;</span>
+    <span class="nv">events:</span>
+      <span class="s">&#39;click .editable&#39;</span><span class="o">:</span> <span class="s">&#39;handleEditableClick&#39;</span>
+    <span class="nv">formatName: </span><span class="nf">(model) -&gt;</span> 
+        <span class="nx">model</span><span class="p">.</span><span class="nx">get</span> <span class="s">&#39;name&#39;</span> <span class="k">if</span> <span class="nx">model</span><span class="o">?</span>
+    <span class="nv">render: </span><span class="nf">-&gt;</span>
+      <span class="k">super</span>
+      <span class="nx">@stickit</span><span class="p">()</span>
+
+    <span class="nv">handleEditableClick: </span><span class="nf">(e) -&gt;</span>
+      <span class="nv">target = </span><span class="nx">$</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span>
+      <span class="nv">target = </span><span class="nx">target</span><span class="p">.</span><span class="nx">parent</span><span class="p">()</span> <span class="k">if</span> <span class="o">!</span><span class="nx">target</span><span class="p">.</span><span class="o">is</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="k">if</span> <span class="nx">target</span><span class="p">.</span><span class="nx">hasClass</span> <span class="s">&#39;editing&#39;</span>
+      <span class="vi">@attr = </span><span class="nx">target</span><span class="p">.</span><span class="nx">data</span> <span class="s">&#39;attr&#39;</span>
+      <span class="vi">@editing = </span><span class="nx">target</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s">&#39;span&#39;</span><span class="p">)</span>
+      <span class="nx">@editing</span><span class="p">.</span><span class="nx">hide</span><span class="p">()</span>
+      <span class="vi">@input = </span><span class="nx">$</span> <span class="s">&quot;&lt;input type=&#39;text&#39; value=&#39;</span><span class="si">#{</span><span class="nx">@model</span><span class="p">.</span><span class="nx">get</span> <span class="nx">@attr</span><span class="si">}</span><span class="s">&#39;&gt;&quot;</span>
+      <span class="nx">@bindInputEvents</span> <span class="nx">@input</span>
+      <span class="nx">target</span><span class="p">.</span><span class="nx">addClass</span> <span class="s">&#39;editing&#39;</span>
+      <span class="nx">target</span><span class="p">.</span><span class="nx">append</span> <span class="nx">@input</span>
+      <span class="nx">@input</span><span class="p">.</span><span class="nx">focus</span><span class="p">()</span>
+
+    <span class="nv">handleInputKeydown: </span><span class="nf">(e) =&gt;</span>
+      <span class="k">switch</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span>
+        <span class="k">when</span> <span class="mi">27</span>
+          <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;Finish editing&quot;</span>
+          <span class="nx">@finishEditing</span><span class="p">()</span>
+        <span class="k">when</span> <span class="mi">13</span>
+          <span class="nx">@saveInputValue</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span>
+
+    <span class="nv">finishEditing: </span><span class="nf">-&gt;</span>
+      <span class="nx">@input</span><span class="p">.</span><span class="nx">off</span><span class="p">()</span>
+      <span class="nx">@input</span><span class="p">.</span><span class="nx">remove</span><span class="p">()</span>
+      <span class="nx">@editing</span><span class="p">.</span><span class="nx">parent</span><span class="p">().</span><span class="nx">removeClass</span> <span class="s">&#39;editing&#39;</span>
+      <span class="nx">@editing</span><span class="p">.</span><span class="nx">show</span><span class="p">()</span>
+
+    <span class="nv">saveInputValue: </span><span class="nf">(val) -&gt;</span>
+      <span class="nx">@model</span><span class="p">.</span><span class="nx">set</span> <span class="nx">@attr</span><span class="p">,</span> <span class="nx">val</span> 
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;Here!&quot;</span>
+      <span class="nx">@finishEditing</span><span class="p">()</span>
+
+
+    <span class="nv">handleInputBlur: </span><span class="nf">(e) =&gt;</span>
+      <span class="nx">@saveInputValue</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span>
+
+    <span class="nv">bindInputEvents: </span><span class="nf">(input) -&gt;</span>
+      <span class="nx">input</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;keydown&#39;</span><span class="p">,</span> <span class="nx">@handleInputKeydown</span>
+      <span class="nx">input</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;blur&#39;</span><span class="p">,</span> <span class="nx">@handleInputBlur</span>
+
+</pre></div></td></tr></tbody></table><div id="generated">generated Tue Nov 19 2013 18:37:01 GMT+0000 (WET)  </div><div id="projectname"><a href="../../../index.html">Foodicious staff</a></div></div></body></html>

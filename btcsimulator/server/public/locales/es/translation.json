@@ -1,0 +1,417 @@
+{
+	"app": {
+		"name": "Foodicious"
+	},
+	"errors": {
+		"4002": "Los datos enviados son inválidos",
+		"40010": "El token ha expirado",
+		"4008": "Recuperación de token inválida",
+		"4041": "Rescurso no encontrado",
+		"5001": "Oops! Algo ha ido mal",
+		"40011": "Debes aceptar nuestros términos",
+		"5002": "No pudimos iniciar el pago"
+	},
+	"feedback": {
+		"button": "Enviar feedback",
+		"title": "Feedback",
+		"error": "Por favor, introduce una descripción.",
+		"intro": "Envía sugerencias de nuestro producto. Problemas, nuevas características o cualquier tipo de sugenrencia son bienvenidas.",
+		"hint": "Comienza con una breve descripción:",
+		"next-button": "Siguiente",
+		"description": "A continuación te permitiremos identificar diferentes áreas de la página relacionadas con tu descripción.",
+		"highlight": {
+			"drag": "Selecciona elementos en la página para poder enteneder mejor tu problema. Puedes mover este diálogo si se encuentra en medio de tu selección.",
+			"highlight": {
+				"button": "Resaltar",
+				"desc": "Resalta elementos importantes de la página."
+			},
+			"blackout": {
+				"button": "Ocultar",
+				"desc": "Oculta cualquier tipo de información personal."
+			},
+			"back": "Atrás"
+		},
+		"overview": {
+			"description": "Descripción",
+			"additional": "Información adicional",
+			"none": "Nada",
+			"browser": "Información del navegador",
+			"page": "Información de la página",
+			"structure": "Estructura de la página",
+			"screenshot": "Captura",
+			"submit": "Enviar"
+		},
+		"success-1": "Gracias por tu aportación. Valoramos cada comentario que recibimos.",
+		"success-2": "No podemos responder individualmente a todo el mundo, pero utilizaremos tus ideas para mejorar la experiencia de usuario.",
+		"ok": "OK",
+		"send-error": "Ha ocurrido un error al enviar tu comentario. Por favor, inténtalo de nuevo."
+	},	
+	"models": {
+		"offer": {
+			"schema":{
+				"description":"Descripción",
+				"start": "Fecha inicio",
+				"end": "Fecha fin",
+				"price": "Precio real",
+				"offer": "Precio oferta"
+			}
+		}
+	},
+	"data": {
+		"months": {
+			"January" : "Enero", 
+			"February" : "Febrero",
+			"March" : "Marzo",
+			"April" : "Abril",
+			"May" : "Mayo",
+			"June" : "Junio",
+			"July" : "Julio",
+			"August" : "Agosto",
+			"September" : "Septiembre",
+			"October" : "Octubre",
+			"November" : "Noviembre",
+			"December" : "Diciembre"
+		},
+		"weekday":{
+			"Monday" : "Lunes",
+			"Tuesday": "Martes",
+			"Wednesday" : "Miércoles",
+			"Thursday" : "Jueves",
+			"Friday" : "Viernes",
+			"Saturday" : "Sábado",
+			"Sunday" : "Domingo"
+		}
+	},
+	"views": {
+		"login": {
+			"welcome-message": "Bienvenido a",
+			"login-form": {
+				"login": {
+					"email": {
+						"placeholder": "Introduce tu email"
+					},
+					"password": {
+						"placeholder": "Contraseña",
+						"forgotten": "¿Olvidaste la contraseña?"
+					},
+					"buttons": {
+						"login": "Inicio sesión"
+					}
+				},
+				"signup": {
+					"name": {
+						"placeholder": "Introduce tu nombre completo"
+					},
+					"email": {
+						"placeholder": "Introduce tu email"
+					},
+					"password": {
+						"placeholder": "Contraseña"
+					},
+					"buttons": {
+						"signup": "Registrate en Foodicious"
+					},
+					"payments": {
+						"plan1": "2 meses de subscripción Foodicious - 39.90€",
+						"plan2": "6 meses de subscripción Foodicious - 79.90€",
+						"plan3": "12 meses de subscripción Foodicious - 119.90€"
+					},
+					"terms": {
+						"accept": "Acepto los ",
+						"terms": "términos y condiciones",
+						"end": " de Foodicious"
+					}
+				}
+			}
+		},
+		"welcome": {
+			"welcome-message": "Crea tu",
+			"business": "negocio",
+			"welcome-form": {
+				"business": {
+					"name": {
+						"placeholder": "Introduce el nombre de tu negocio"
+					},
+					"description": {
+						"placeholder": "Introduce la descripción de tu negocio"
+					},
+					"opening-hours": {
+						"placeholder": "Introduce el horario de tu negocio"
+					},
+					"address": {
+						"placeholder": "Introduce tu dirección"
+					},
+					"zip-code": {
+						"placeholder": "Introduce tu código postal"
+					},
+					"buttons": {
+						"next": "Siguiente",
+						"back": "Atras",
+						"create-business": "Crear",
+						"logout": "Salir"
+					},
+					"map": {
+						"header": "Estamos intentando localizar tu negocio, el proceso no es 100% exacto, si la localización es incorrecta puedes mover el marcador al lugar correcto en el mapa."
+					}
+				}
+			}
+		},
+		"dashboard":{
+			"titleCharts": {
+				"offersThisMonth" : "Ofertas creadas este mes",
+				"uniqueVisitors" : "Visitantes únicos",
+				"offersPerMonth" : "Ofertas por mes",
+				"visitsPerMonth" : "Visitas por mes",
+				"checksPerMonth" : "Canjeos por mes",
+				"visitsPerWeekDay" : "Visitas por días de la semana",
+				"checksPerWeekDay" : "Canjeos por días de la semana",
+				"revenuePerMonth"  : "Ganancias por mes",
+				"revenuePerOffer"  : "Ganancias por oferta"
+			}
+		},
+		"payments": {
+			"payments-message-first": "Selecciona",
+			"payments-message-second": "tu opción",
+		    "plan1": {
+		      "name": "2 meses de subscripción",
+		      "price": "39.90€",
+		      "description" : "19.95€ al mes<br> <b>Ofertas</b> ilimitadas <br> <b>estadísticas</b> ilimitadas"    
+		    },
+		    "plan2": {
+		      "name": "6 meses de subscripción",
+		      "price": "79.90€",
+		      "description" : "ahorra un 33% <br> <b>Ofertas</b> ilimitadas <br> <b>estadísticas</b> ilimitadas"    
+		    },
+		    "plan3": {
+		      "name": "1 año de subscripción",
+		      "price": "119.90€",
+		      "description" : "Ahorra un 50% <br>  <b>Ofertas</b> ilimitadas <br> <b>estadísticas</b> ilimitadas"      
+		    },
+		    "btn" : "Comprar ahora"
+
+		},
+		"business": {
+			"header": {
+				"total-offers": "Ofertas totales",
+				"year-visits": "Visitas este año"
+			},
+			"tabs": {
+				"menu": {
+					"overview": "Actividad",
+					"contact": "Contacto",
+					"settings": "Ajustes"
+				},
+				"overview": {
+					"activity": "Actividad reciente",
+					"revenue": "Ganancias",
+					"timeline": {
+						"offer": {
+							"text": "Ahora ofreces: "
+						},
+						"visit": {
+							"text": "Alguien visito tu negocio."
+						},
+						"check": {
+							"text": "Aguien disfruto de "
+						}
+					}
+				},
+				"contact": {
+					"location": "Dirección",
+					"contacts": "Contactos",
+					"opening-hours": "Horario",
+					"telephone": "Teléfono",
+					"email": "Email",
+					"not-available": "No disponible"
+				}
+			},
+			"form":{
+				"name": "Nombre",
+				"description": "Descripción",
+				"opening-hours": "Horario",
+				"category": "Categoría",
+				"country": "País",
+				"state": "Provincia",
+				"town": "Ciudad",
+				"zip-code": "Código Postal",
+				"address": "Dirección",
+				"telephone": "Teléfono",
+				"email": "Email",
+				"save": {
+					"name":"Guardar",
+					"notificationSuccess":"Guardado correctamente",
+					"notificationError":"Error, intentelo de nuevo más tarde"
+					},
+				"cancel": "Cancelar"
+			}
+
+		},
+		"layout": {
+			"sidebar": {
+				"home": {
+					"name": "Home"
+				},
+				"business": {
+					"name": "Mi negocio"
+				},
+				"offers": {
+					"name": "Ofertas"
+				}
+			},
+			"header": {
+				"profile": {
+					"name": "Perfil"
+				},
+				"logout": {
+					"name": "Salir"
+				},
+				"new-offer": {
+					"name": "Nueva oferta",
+					"modal": {
+						"title": "Crear oferta",
+						"okText": "Ok",
+						"cancelText": "Cancelar",
+						"notificationError": "La oferta no se ha podido crear",
+						"notificationSuccess": "Oferta creada!"
+					}
+				},
+				"qrcode": {
+					"name": "Código QR"
+				}
+			}
+		},
+		"offer":{
+			"no-offers": "No hay ninguna oferta. Puedes crear una haciendo click en el botón de arriba.",
+			"price": "Precio real",
+			"offer": "Precio oferta",
+			"viewPhoto": "Ver foto",
+			"checks": "Canjeos",
+			"edit": "Editar",
+			"delete": "Eliminar",
+			"expires": "Caduca",
+			"expired": "Caducó",
+			"uploadImage": "Añadir imágen",
+			"modal": {
+				"delete":{
+					"title": "Eliminar",
+					"content": "¿Estas seguro de eliminar esta oferta?",
+					"okText": "Sí",
+					"cancelText": "No",
+					"notificationError": "Imposible eliminar, intentalo más tarde",
+					"notificationSuccess": "Eliminación correcta"
+				},
+				"edit":{
+					"title": "Editar",
+					"okText": "Ok",
+					"cancelText": "Cancelar",
+					"notificationError": "Imposible editar, intentalo más tarde",
+					"notificationSuccess": "Guardado correctamente"
+				}
+			}
+		},
+		"profile": {
+			"created": "Cuenta creada",
+			"saveButton": "Guardar",
+			"form": {
+				"name": "Nombre completo",
+				"email": "Email",
+				"oldPassword": "Contraseña actual",
+				"password": "Contraseña nueva",
+				"confirmation": "Confirmar contraseña"			
+			},
+			"password": {
+				"notificationError": "La contraseña no se ha podido actualizar",
+				"notificationSuccess": "Contraseña actualizada correctamente"							
+			},
+			"profile": "Cambia tu imagen en ",
+			"expires": "Tu cuenta caduca en ",
+			"terms": "Términos y condiciones de uso",
+			"avatar": "Cambia tu avatar en "
+		},
+		"qr": {
+			"modal": {
+				"title": "Obtén tu código QR",
+				"okText": "Ok",
+				"pdfButton": "Guardar como PDF",
+				"imageButton": "Guardar como imágen"
+			},
+			"file": {
+				"name": "foodicious-qr-code"
+			}
+		},
+		"paymentConfirm": {
+			"doh": {
+				"title": "Doh!",
+				"text": "No podemos procesar tu pago",
+				"button": "Intentar de nuevo"
+			},
+			"ok": {
+				"title": "Increible!",
+				"text": "Su pago se ha realizado con éxito",
+				"button": "Continuar"
+			}
+		},
+		"recover": {
+			"request": {
+				"success": "Comprueba tu email y sigue las intrucciones para recuperar la contraseña",
+				"title": "Recupera",
+				"subtitle": "tu contraseña",
+				"placeholder": "Email",
+				"button": "Enviar"
+			},
+			"change": {
+				"success": "Contraseña actualizada correctamente",
+				"title": "Resetea",
+				"subtitle": "tu contraseña",
+				"password": "Contraseña",
+				"confirm": "Confirmar contraseña",
+				"button": "Guardar",
+				"back": "Atrás"
+			}
+		},
+		"terms": {
+			"title": "Términos",
+			"subtitle": "y condiciones",
+			"introduction": "Al usar este sitio web, usted acepta las condiciones de uso. Si no está de acuerdo con estos términos de uso, por favor, no utilice este sitio web. Nos reservamos el derecho de cambiar, modificar, añadir o eliminar porciones de estos términos en cualquier momento. Por favor, consulte estos términos periódicamente para estar actualizado de los posibles cambios.",
+			"general-info": {
+				"title": "Información general",
+				"content": "Este sitio web es propiedad de Weappin Solutions S.L., una sociedad limitada española con domicilio social en Santa Cruz de Tenerife y CIF B76602721. El uso de este sitio web implica la aceptación, por parte del usuario, de las obligaciones legales estipuladas en estas condiciones de uso y la aceptación de actuar de acuerdo con estas condiciones y con el resto de cláusulas aplicables. Si el usuario no acepta estas condiciones de uso u otras cláusulas aplicables, éste no debe hacer uso del sitio web."
+			},
+			"acceptance": {
+				"title": "Aceptación de los términos de uso",
+				"content": "Las presentes condiciones (en adelante denominadas Aviso legal) tienen por objeto regular el uso de esta Web que Weappin Solutions S.L. (en adelante .La Empresa.) pone a disposición del público en la presente URL. La utilización del sitio Web por un tercero le atribuye la condición de Usuario y supone la aceptación plena por dicho Usuario de todas y cada una de las condiciones que se incorporan al presente Aviso legal, si se incumple alguna de las condiciones, la empresa se reserva el derecho de cancelar la cuenta, sin devolución del dinero aportado."			},
+			"modification": {
+				"title": "Modificación de los términos de uso",
+				"content": "La empresa se reserva el derecho de modificar o remplazar en cualquier momento cualquiera de los Términos de Uso, o cambiar, suspender o desconectar el Servicio en cualquier momento, mandando una notificación a los usuarios por correo electrónico. La empresa también puede limitar el acceso a ciertos servicios o restringir el acceso a algunas partes o contenidos de la web. Es la responsabilidad del usuario comprobar los Términos de Uso periódicamente."
+			},
+			"behaviour": {
+				"title": "Reglas de Conductas",
+				"content": "El Usuario se compromete a no usar la Web para ningún propósito que esté prohibido en los Términos de Uso. El usuario es responsable de toda su actividad en conexión con la Web. Para propósitos de Términos de Uso, el término contenido incluye, sin limitación, toda participación del usuario, información, datos, texto, fotografías, gráficos u otro tipo de contenidos que se hagan accesibles en la web. No se debe subir a la web ningún tipo de contenido que: Infrinja alguna patente, secreto, copyright, derecho de publicidad o cualquier otro tipo de derechos o que viole alguna ley o ley contractual, que provoque spam, contenga virus u otro tipo de códigos, archivos o programas diseñados para destruir, dañar con la función original del software, hardware o equipos de comunicación."
+			},
+			"registration": {
+				"title": "Registro",
+				"content": "El usuario debe estar registrado para poder hacer uso del servicio y debe seleccionar una contraseña y un identificador de usuario. El usuario debe proporcionar a la Empresa información de registro veraz, actualizada y completa. El usuario no debe seleccionar o usar un nombre de usuario de otra persona con la intención de remplazar a esa persona. No se debe usar un nombre de usuario ni una contraseña de otra persona sin tener autorización. No se permite usar como nombre de usuario nombres que sean ofensivos. La empresa se reserva el derecho de cancelar el registro de cualquier usuario cuando no se respeten estos términos de uso o se haga un uso indebido del sitio Web. El usuario es el responsable de cualquier actividad que ocurra con su cuenta. El usuario debe notificar a la empresa cualquier comportamiento irregular o no autorizado de su cuenta."
+			},
+			"payments": {
+				"title": "Cobros",
+				"content": "Foodicious se trata de una aplicación web de pago por uso, el cliente siempre quedará sujeto al precio del pack en el momento de la compra."			},
+			"license": {
+				"title": "Contenido y Licencia",
+				"content": "El usuario acepta que el Servicio contiene Contenido realizado por la Empresa y este Contenido tiene derechos de propiedad."
+			},
+			"copyright": {
+				"title": "Propiedad Intelectual. Usuarios",
+				"content": "El Servicio puede proporcionar a los usuarios la capacidad de agregar, crear, cargar, distribuir o publicar Contenido. Este Contenido pueden ser datos, textos, fotografías, gráficos, u otra información en el Sitio. Reconociendo que: Declara, garantiza y puede demostrar que posee o controla todos los derechos de todo el contenido de sus envíos de usuario, o que el contenido de dichos envíos de usuario es de dominio público, tiene plena autoridad para actuar en nombre de los propietarios de sus envíos de usuario a utilizar dicho contenido como se contempla en estas Condiciones de Uso y la concesión de los derechos de licencia establecidos anteriormente, tiene permiso para usar el nombre e imagen de cada persona individual identificable y el uso individual de dicha identificación o información personal como se contempla en estas Condiciones de Uso. Que el uso o explotación de dichos Contenidos de usuarios por la Empresa y la utilización o explotación por los usuarios del Sitio y de servicio como se contempla en el presente Acuerdo no infringirá ni violará los derechos de cualquier tercero, incluyendo sin limitación, cualquier derecho a la privacidad, derechos de publicidad, derechos de autor, derechos contractuales, o cualquier otra propiedad intelectual o derechos de propiedad. El usuario entiende que la empresa tendrá el derecho a eliminar, editar, modificar el formato, citar o traducir cualquier material, el contenido o la información presentada, y que toda la información pública o privada de transmisión a través del Sitio es responsabilidad exclusiva de la persona que ha creado dicho contenido y que la Empresa no será responsable por cualquier error u omisión en cualquier contenido, y que la Empresa no puede garantizar la identidad de otros usuarios con los que pueden interferir en el curso de la utilización del Servicio. La empresa no respalda y no tiene control sobre ninguna de las entregas de usuario. Ésta no puede garantizar la autenticidad de los datos. El usuario reconoce que todo el Contenido al que accede por el uso del Servicio es bajo su propio riesgo y será el único responsable de cualquier daño o perjuicio que estos supongan."
+			},
+			"termination": {
+				"title": "Terminación",
+				"content": "La empresa podrá dar por terminado el acceso a todo o cualquier parte del Servicio en cualquier momento, si se infringen las condiciones expuestas, con o sin previo aviso, con efecto inmediato. Si desea cancelar su cuenta, puede hacerlo reflejándolo en un correo a la siguiente dirección foodicious@weappin.com. Todas las disposiciones de los Términos de Uso que por su naturaleza deberían sobrevivir a la terminación seguirán vigentes, incluyendo, sin limitación, las disposiciones de propiedad, renuncias de garantía, indemnización y limitaciones de responsabilidad.!"			},
+			"coupons": {
+				"title": "Uso de los cupones",
+				"content": "La empresa no se hace responsable de un uso fraudulento de los cupones generados por los usuarios finales. Tampoco se compromete a la Empresa a devolver el dinero en caso de que se haya producido fraudes, uso ilegítimo o irregularidades por parte de los usuarios finales."		},
+			"cookies": {
+				"title": "Uso de cookies",
+				"content": "Las cookies son ficheros enviados a un navegador por medio de un servidor web para registrar algunas actividades del usuario en el sitio web. Las cookies que instalamos nosotros, nuestros socios comerciales u otras partes cuando visitas este sitio web no te reconocen personalmente como individuo ni dañan tu dispositivo de forma alguna; sólo reconocen el dispositivo que utilizas, te permiten acceder a varias funciones importantes del sitio web, mantienen seguras áreas privadas del sitio web, recuerdan tus preferencias, personalizan el contenido del sitio web de forma que sea más pertinente para ti."			}
+		}		
+	}
+}

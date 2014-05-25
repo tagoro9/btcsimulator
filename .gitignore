@@ -8,3 +8,7 @@ settings.py
 
 ;;directories to ignore
 .idea/
+node_modules/
+bower_components/
+btsimulator/server/public/
+tmp/
