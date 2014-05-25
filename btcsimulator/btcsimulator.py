@@ -4,12 +4,8 @@ from redis import StrictRedis
 from redis import ConnectionError
 import numpy
 import simpy
-from simpy.events import AnyOf, AllOf
-import random
-import collections
 import hashlib
 import pickle
-import sys
 from datetime import timedelta
 import time
 
@@ -68,12 +64,6 @@ class Socket:
 
     def receive(self, miner_id):
         return self.store.get(filter=lambda event: event.destination == miner_id)
-
-class Logger:
-    @staticmethod
-    def log(time, miner, message, block, show=2):
-        if 1 == show:
-            print("#%7.4f\t\tMiner %d\t\t%s\t%s" %(time, miner, message.ljust(20, ' '), block))
 
 class Event:
     def __init__(self, destination, origin, time, action, payload):
@@ -196,7 +186,6 @@ class Miner:
                 yield self.env.timeout(time)
                 # Once the block is mined it needs to be added. An event is triggered
                 block = Block(self.chain_head, self.blocks[self.chain_head].height + 1, self.env.now, self.id, block_size, 1)
-                Logger.log(self.env.now, self.id, "NEW_BLOCK", sha256(block))
                 self.notify_new_block(block)
             except simpy.Interrupt as i:
                 # When the mining process is interrupted it cannot continue until it is told to continue
@@ -279,7 +268,6 @@ class Miner:
 
     # Announce new head when block is added to the chain
     def announce_block(self, block):
-        Logger.log(self.env.now, self.id, "ANNOUNCE_BLOCK **", sha256(block))
         self.broadcast(Miner.HEAD_NEW, sha256(block))
 
     # Request a block to all links
@@ -314,9 +302,7 @@ class Miner:
             if len(self.socket.links) == 0:
                 return
             data = yield self.socket.receive(self.id)
-            Logger.log(self.env.now, self.id, "EVENT", data.id)
             if data.action == Miner.BLOCK_REQUEST:
-                Logger.log(self.env.now, self.id, "BLOCK_REQUEST", data.payload)
                 # Send block if we have it
                 if data.payload in self.blocks:
                     self.send_block(data.payload, data.origin)
@@ -324,10 +310,8 @@ class Miner:
                 else:
                     self.send_ack(data.origin)
             elif data.action == Miner.BLOCK_RESPONSE:
-                Logger.log(self.env.now, self.id, "BLOCK_RESPONSE", sha256(data.payload))
                 self.notify_received_block(data.payload)
             elif data.action == Miner.HEAD_NEW:
-                Logger.log(self.env.now, self.id, "HEAD_NEW", data.payload)
                 # If we don't have the new head, we need to request it
                 if data.payload not in self.blocks:
                     self.request_block(data.payload)
