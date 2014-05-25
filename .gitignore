@@ -10,5 +10,5 @@ settings.py
 .idea/
 node_modules/
 bower_components/
-btsimulator/server/public/
+btcsimulator/server/public/
 tmp/
