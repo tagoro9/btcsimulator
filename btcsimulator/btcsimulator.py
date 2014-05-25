@@ -308,6 +308,7 @@ class Miner:
             events = [self.links[to].receive() for to in self.links]
             received_events = yield AnyOf(self.env, events)
             for event, data in received_events.items():
+                Logger.log(self.env.now, self.id, "EVENT", data.id, 1)
                 if data.action == Miner.BLOCK_REQUEST:
                     Logger.log(self.env.now, self.id, "BLOCK_REQUEST", data.payload)
                     # Send block if we have it
@@ -372,6 +373,41 @@ class RedisUtils:
 
 class Simulator:
 
+    def mine(self):
+        try:
+            # Clear redis database before new simulation starts
+            r.flushdb()
+        except ConnectionError:
+            return -1
+        # Store in redis the simulation event names
+        RedisUtils.configure_event_names()
+        days = 1
+        simulation_time = 5000 #TimeUtils.get_seconds(days)
+        env = simpy.Environment()
+        seed_block = Block(None, 0, env.now, -1, 0, 1)
+        miners = []
+        miners.append( Miner(env, 0.5068986167220384 * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block))
+        miners.append(Miner(env, 0.085196940891858156 * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block))
+        miners.append(Miner(env, 0.40790444238610346 * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block))
+        Miner.connect(env, miners[0], miners[1])
+        Miner.connect(env, miners[0], miners[2])
+        Miner.connect(env, miners[1], miners[2])
+        for miner in miners: miner.start()
+        start = time.time()
+        # Start simulation until limit. Time unit is seconds
+        env.run(until=simulation_time)
+        end = time.time()
+        print("Simulation took: %1.4f seconds" % (end - start))
+        # Store in redis simulation days
+        RedisUtils.store_days(days)
+        # After simulation store every miner head, so their chain can be built again
+        for miner in miners: r.hset("miners:" + repr(miner.id), "head", miner.chain_head)
+        # Notify simulation ended
+        r.publish("/btcsimulator", "simulation ended")
+        return 0
+
+
+
     def standard(self, miners_number=20, days=10):
         # Convert simulation days to seconds
         simulation_time = TimeUtils.get_seconds(days)
@@ -421,6 +457,6 @@ class Simulator:
 
 if __name__ == '__main__':
     sim = Simulator()
-    sim.standard(3, 1)
+    sim.mine()
 
 
