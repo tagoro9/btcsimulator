@@ -23,7 +23,8 @@
     "jquery.transit": "0.9.9",
     "i18next": "1.7.1",
     "nprogress": "0.1.2",
-    "sugar": "1.4.1"
+    "sugar": "1.4.1",
+    "d3": "~3.4.8"
   },
   "overrides": {
     "backbone": {

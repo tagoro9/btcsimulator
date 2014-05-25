@@ -1,7 +1,7 @@
 config =
 	# API configuration
 	api: 
-		host: ''
+		host: 'http://localhost:5000'
 		root: '/'
 	# Keys to be loaded in the mediator at application initialization
 	init:

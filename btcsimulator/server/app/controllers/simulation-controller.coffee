@@ -1,7 +1,7 @@
 Controller = require 'controllers/base/controller'
 
-module.exports = class HomeController extends Controller
+module.exports = class SimulationController extends Controller
 
-	name: 'SimulatorController'
+	name: 'SimulationController'
 
-	network: -> @viewAndCollection 'Network'
+	network: -> @viewAndCollection 'Network', 'Miner'
