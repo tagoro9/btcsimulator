@@ -1,1 +1,7 @@
-{}
+{
+    "index": {
+        "title": "itcoin simulator",
+        "description": "A Bitcoin network protocol simulator written in python",
+        "button": "Setup new simulation!"
+    }
+}
