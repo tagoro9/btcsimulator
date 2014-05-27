@@ -15,6 +15,7 @@ module.exports = class Controller extends Chaplin.Controller
 		default: [
 			'site'
 			'header'
+      'sidebar'
 		]
 	# Assign default layout to all the controller views
 	layout: 'default'

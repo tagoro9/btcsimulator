@@ -57,6 +57,12 @@ module.exports = class Model extends Backbone.RelationalModel
   # Mixin an EventBroker.
   _.extend @prototype, EventBroker
 
+  parse: (response, options) ->
+    if response.data?
+      super response.data, options
+    else
+      super response, options
+
   toString: -> @get(@toStringAttr) or @id
 
   # This method is used to get the attributes for the view template

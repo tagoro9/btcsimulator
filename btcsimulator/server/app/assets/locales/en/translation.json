@@ -1,7 +1,33 @@
 {
-    "index": {
-        "title": "itcoin simulator",
-        "description": "A Bitcoin network protocol simulator written in python",
-        "button": "Setup new simulation!"
+    "home": {
+        "index": {
+            "title": "itcoin simulator",
+            "description": "A Bitcoin network protocol simulator written in python",
+            "button": "Setup new simulation!"
+        }
+    },
+    "layout": {
+        "sidebar": {
+            "network": "Network",
+            "blocks": "Blocks"
+        }
+    },
+    "simulation": {
+        "network": {
+            "simulation": {
+                "simulation": "Simulation",
+                "days": "Days",
+                "miners": "Miners",
+                "links": "Links",
+                "blocks": "Total blocks",
+                "events": "Events"
+            },
+            "miner": {
+                "blocks-mined": "Blocks mined",
+                "hashrate": "Hash rate",
+                "verifyrate": "Verify reate",
+                "links": "Links"
+            }
+        }
     }
 }
