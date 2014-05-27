@@ -67,29 +67,35 @@ def get_miner(id):
     return data
 
 @app.route('/miners/<string:id>', methods=['GET'])
+@crossdomain(origin='*')
 def miner(id):
     return jsonify(data=get_miner(id))
 
 @app.route('/miners/<string:id>/links', methods=['GET'])
+@crossdomain(origin='*')
 def miner_links(id):
     return jsonify(data=get_miner_links(id))
 
 @app.route('/miners/<string:id>/blocks', methods=['GET'], defaults={'page': 1})
 @app.route('/miners/<string:id>/blocks/page/<int:page>')
+@crossdomain(origin='*')
 def miner_blocks(id, page):
     return jsonify(data=get_blocks("miners:" + id + ":blocks", page))
 
 @app.route('/miners/<string:id>/blocks-mined', methods=['GET'], defaults={'page': 1})
 @app.route('/miners/<string:id>/blocks-mined/page/<int:page>', methods=['GET'])
+@crossdomain(origin='*')
 def miner_blocks_mined(id, page):
     return jsonify(data=get_blocks("miners:" + id + ":blocks-mined", page))
 
 @app.route('/blocks', methods=['GET'], defaults={'page': 1})
 @app.route('/blocks/page/<page>', methods=['GET'])
+@crossdomain(origin='*')
 def blocks(page):
     return jsonify(data=get_blocks("blocks", page))
 
 @app.route('/blocks/<string:id>', methods=['GET'])
+@crossdomain(origin='*')
 def block(id):
     block = r.hgetall("blocks:" + id)
     block['hash'] = id
@@ -97,29 +103,35 @@ def block(id):
 
 @app.route('/events', methods=['GET'], defaults={'page': 1})
 @app.route('/events/page/<string:page>', methods=['GET'])
+@crossdomain(origin='*')
 def events(page):
     return jsonify(data=get_events("events", page))
 
 @app.route('/events/<string:id>', methods=['GET'])
+@crossdomain(origin='*')
 def event(id):
     return jsonify(data=get_event(id))
 
 @app.route('/days/<string:id>/events', methods=['GET'], defaults={'page': 1})
 @app.route('/days/<string:id>/events/page/<int:page>', methods=['GET'])
+@crossdomain(origin='*')
 def day_events(id, page):
     return jsonify(data=get_events("days:" + id + ":events", page))
 
 @app.route('/miners/<string:id>/events', methods=['GET'], defaults={'page': 1})
 @app.route('/miners/<string:id>/events/page/<int:page>', methods=['GET'])
+@crossdomain(origin='*')
 def miner_events(id, page):
     return jsonify(data=get_events("miners:" + id + ":events", page))
 
 @app.route('/days', methods=['GET'])
+@crossdomain(origin='*')
 def days():
     days = r.smembers("days")
     return jsonify(data=list(days))
 
 @app.route('/links', methods=['GET'])
+@crossdomain(origin='*')
 def links():
     links_data = []
     links = r.smembers("links")
@@ -130,12 +142,14 @@ def links():
     return jsonify(data=links_data)
 
 @app.route('/links/<string:id>', methods=['GET'])
+@crossdomain(origin='*')
 def link():
     link = r.hgetall("links:" + id)
     return jsonify(data=link)
 
 
 @app.route('/chain/<string:head>', methods=['GET'])
+@crossdomain(origin='*')
 def chain(head):
     data = []
     while head != None:
@@ -145,6 +159,7 @@ def chain(head):
     return jsonify(data=data)
 
 @app.route('/summary')
+@crossdomain(origin='*')
 def summary():
     data = dict()
     data['miners'] = r.scard("miners")
