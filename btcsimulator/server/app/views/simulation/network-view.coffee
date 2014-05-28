@@ -5,7 +5,7 @@ Summary = require 'models/summary'
 module.exports = class NetworkView extends View
   template: template
   id: 'network'
-  className: 'container'
+  className: 'container simulation-info'
   summaryBindings:
     "#total-blocks": "blocks"
     "#miners": "miners"
@@ -29,12 +29,11 @@ module.exports = class NetworkView extends View
     super
     @summary = new Summary.Model()
     @summary.fetch reset: true
-    console.log @summary
     @listenTo @collection, 'reset', @createNetwork
     @listenTo @, 'addedToDOM', @fetchNetwork
 
   fetchNetwork: ->
-    @$('#network-container').height @$('.row').height()
+    @$('.chart-container').css 'height', @$('.row').height()
     @collection.fetch reset: true
 
   render: ->
@@ -97,6 +96,6 @@ module.exports = class NetworkView extends View
       node.attr("cy", (d) -> d.y)
     )
 
-  dispose: ->
+  remove: ->
     super
     @unstickit()

@@ -15,14 +15,15 @@ body {
   }
 }
 
-#network {
+.simulation-info {
   background: #fff;
   border-radius: 5px;
   font-size: 15px;
   h2 {
     font-size: 25px;
   }
-  #network-container {
+  .chart-container {
+    min-height: 500px;
     #network-chart {
       svg {
         margin: 20px;
@@ -31,5 +32,13 @@ body {
       }
       height: 100%;
     }
+  }
+}
+
+svg {
+  path {
+    stroke-width: 1;
+    stroke: #000;
+    fill: none;
   }
 }
