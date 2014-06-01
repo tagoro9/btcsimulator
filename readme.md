@@ -59,7 +59,7 @@ If all went fine, the welcome screen should appear.
 ##Structure
 This project consists on three main modules:
 
-* An [Backbone.js](http://backbonejs.org) webapp which controls simulation and displays data visualizations using [D3](http://d3js.org).
+* A [Backbone.js](http://backbonejs.org) webapp which controls simulation and displays data visualizations using [D3](http://d3js.org).
 * A web server that exposes a REST API with all the simulation information stored in Redis. This server is also in charge of launching simulations
 through the Celery worker and notifies any change of state to the web app using web sockets.
 * A python library that drives the simulation and stores every single piece of data or communication between nodes in redis for further analysis.
