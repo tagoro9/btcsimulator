@@ -9,7 +9,8 @@
     "layout": {
         "sidebar": {
             "network": "Network",
-            "blocks": "Blocks"
+            "blocks": "Blocks",
+            "explorer": "Chain explorer"
         }
     },
     "simulation": {
@@ -28,6 +29,16 @@
                 "verifyrate": "Verify reate",
                 "links": "Links"
             }
+        },
+        "blocks": {
+            "blocks": "Blocks",
+            "total": "Total blocks",
+            "ratio": "1 block every",
+            "head": "Chain head"
         }
+    },
+    "global": {
+        "minutes": "min",
+        "seconds": "s"
     }
 }

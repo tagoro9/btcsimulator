@@ -38,12 +38,16 @@ module.exports = class NetworkView extends View
 
   render: ->
     super
+    @$('#miner-info').hide()
     @stickit @summary, @summaryBindings
 
-  createNetwork: () ->
-    @miner = @collection.at(0)
+  showMiner: (id) ->
+    @$('#miner-info').fadeIn()
+    @miner = @collection.get id + 1
     @stickit @miner, @minerBindings
-    console.log(@miner.toJSON())
+
+  createNetwork: () ->
+    that = @
     data = @collection.getNetwork()
     width = @$('#network-chart').width() - 40
     height = @$('#network-chart').height() - 40
@@ -53,6 +57,48 @@ module.exports = class NetworkView extends View
     .linkDistance(180)
     .size([width, height])
     .gravity(0.5)
+
+    resetLinks = ->
+      d3.selectAll('.link')
+      .transition()
+      .style("stroke-width", 0.5)
+      .style("stroke", '#000')
+      .style("opacity", 0.3)
+
+    hideLinks = (minerId) ->
+      d3.selectAll('.link')
+      .transition()
+      .filter((d) -> d.source.id isnt minerId and d.target.id isnt minerId)
+      .style("opacity", 0.1)
+      .style("stroke", '#000')
+      .style("stroke-width", 0.5)
+
+    focusLinks = (minerId) ->
+      d3.selectAll('.link')
+      .filter((d) -> d.source.id is minerId or d.target.id is minerId)
+      .transition()
+      .style("stroke", color minerId)
+      .style("stroke-width", 1.5)
+      .style("opacity", 1)
+
+
+    nodeClick = ->
+      d3.select(this).classed("node-selected", (d) -> d.selected = !d.selected)
+      .each((miner) ->
+          d3.selectAll('.node.node-selected').classed("node-selected", (d) ->
+            if d.id isnt miner.id
+              d.selected = false
+            else
+              d.selected = true
+          )
+      )
+      resetLinks()
+      d3.selectAll('.node.node-selected')
+      .each((miner) ->
+          that.showMiner miner.id
+          hideLinks miner.id
+          focusLinks miner.id
+      )
 
     svg = d3.select('#network-chart').append('svg')
     .attr('width', width)
@@ -72,6 +118,7 @@ module.exports = class NetworkView extends View
     .attr("class", "link")
     .style("stroke-width", (d) -> 0.5)
     .style("stroke", '#000')
+    .style("opacity", 0.3)
 
     node = g.selectAll(".node")
     .data(data.nodes)
@@ -81,6 +128,7 @@ module.exports = class NetworkView extends View
     .style("fill", (d) -> color(d.id))
     .style("stroke", "#fff")
     .style("stroke-width", "1.5px")
+    .on('click', nodeClick)
     .call(force.drag)
 
     node.append("title")
@@ -95,6 +143,9 @@ module.exports = class NetworkView extends View
       node.attr("cx", (d) -> d.x)
       node.attr("cy", (d) -> d.y)
     )
+
+    #d3.selectAll(".link")
+    #.style("stroke", "#F00")
 
   remove: ->
     super
