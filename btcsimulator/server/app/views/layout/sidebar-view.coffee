@@ -21,4 +21,6 @@ module.exports = class SidebarView extends View
     if _.any @$('a'), ((ele) ->  "/#{path}" is $(ele).attr('href')) then path else ""
 
   changeURLFirstTime: ->
-    @changeURL path: @hashOrRoot window.location.pathname.substring 1
+      setTimeout () =>
+        @changeURL path: @hashOrRoot window.location.pathname.substring 1
+      , 50
