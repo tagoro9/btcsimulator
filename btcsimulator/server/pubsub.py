@@ -6,6 +6,7 @@ def start_pubsub():
     from btcsimulator.server.core import r
     from flask.ext.socketio import emit, SocketIO
     from gevent import Greenlet, monkey
+    from core import logger
 
     # Add socket io capabilites
     socketio = SocketIO(app)
@@ -20,12 +21,12 @@ def start_pubsub():
 
     def process_received_mesg(message):
         # Notify all clients the message
-        print(message['data'])
+        logger.info("Received data from redis: " + repr(message['data']))
         socketio.emit('redis', message['data'], namespace=app.config['SIMULATOR_NAMESPACE'])
 
     @socketio.on('connect', namespace=app.config['SIMULATOR_NAMESPACE'])
     def connect():
-        print("Connected")
+        logger.info("Client connected")
         emit('status', {'data': 'Connected'})
 
     pubsub = r.pubsub()

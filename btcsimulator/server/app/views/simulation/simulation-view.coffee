@@ -45,6 +45,7 @@ module.exports = class SimulationView extends View
       @$('#in-progress').css 'display', 'block'
       @$('#in-progress').transition opacity: 1
       @startSpinner()
+      @submitSimulation()
 
   # Inspired by http://codepen.io/joshy/pen/cojbD
   startSpinner: ->
@@ -96,6 +97,18 @@ module.exports = class SimulationView extends View
     animate()
 
 
+  submitSimulation: ->
+    # Redirect to stats when simulation ends
+    @subscribeEvent "redis", () =>
+      Chaplin.utils.redirectTo('network')
+
+    $.ajax({
+      type: 'POST'
+      url: @model.urlRoot
+      data: JSON.stringify @model.toJSON()
+      contentType: "application/json"
+      dataType: 'json'
+    })
 
   remove: ->
     super
