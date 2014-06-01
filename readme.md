@@ -18,8 +18,9 @@ are feasible to perform on a real scenario.
 * Python 2.7.*. Most parts of the simulator are written in python.
 * Redis. Download and install [Redis](http://redis.io). The simulator uses redis as data store. In order to work properly the application must
 connect to a redis server instance.
-* Yeoman. Download and install [Yeoman](http://yeoman.io). Simulation control and data visualization features are
-presented in an [Angularjs](http://angularjs.org) webapp.
+* Brunch
+* Bower
+* Celery
 
 ##Getting started
 

@@ -1,10 +1,9 @@
 __author__ = 'victor'
 from server import app
-from server.core import socketio, logger
+from server.pubsub import start_pubsub
+from server.core import logger
+
 
 def runserver():
-    socketio.run(app)
-
-if __name__ == '__main__':
-    logger.info("Web server running on http://localhost:5000")
-    runserver()
+    server = start_pubsub()
+    server.run(app)

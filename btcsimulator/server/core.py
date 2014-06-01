@@ -1,32 +1,13 @@
 __author__ = 'victor'
 from . import app
 import logging
+from celery import Celery
 from redis import StrictRedis
-from flask.ext.socketio import SocketIO
-from gevent import Greenlet, monkey
 from datetime import timedelta
 from flask import make_response, request, current_app
 from functools import update_wrapper
 # Connect to redis
 r = StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=app.config['REDIS_DB'])
-# Add socket io capabilites
-socketio = SocketIO(app)
-
-monkey.patch_all()
-
-def sub(pubsub):
-    # Subscribe to channel
-    pubsub.subscribe(app.config['SIMULATOR_NAMESPACE'])
-    for message in pubsub.listen():
-        # Process new messages when they arrive
-        Greenlet.spawn(process_received_mesg, message)
-
-def process_received_mesg(message):
-    # Notify all clients the message
-    socketio.emit('redis', message['data'], namespace=app.config['SIMULATOR_NAMESPACE'])
-
-pubsub = r.pubsub()
-Greenlet.spawn(sub, pubsub)
 
 # Create application logger
 logger = logging.getLogger("btcsimulator")
@@ -36,6 +17,21 @@ ch = logging.StreamHandler()
 ch.setFormatter(formatter)
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
+
+# Method to create celery tasks
+def make_celery(app):
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    class ContextTask(TaskBase):
+        abstract = True
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+    return celery
+
+celery = make_celery(app)
 
 # Create cross domain decorator to add HTTP origin headers
 def crossdomain(origin=None, methods=None, headers=None,

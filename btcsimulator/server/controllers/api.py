@@ -2,7 +2,8 @@ __author__ = 'victor'
 
 from . import app
 from ..core import r, crossdomain
-from flask import jsonify
+from ..tasks import start_simulation_task
+from flask import jsonify, request
 from zato.redis_paginator import ZSetPaginator
 
 
@@ -168,3 +169,12 @@ def summary():
     data['days'] = r.scard("days")
     data['events'] = r.zcard("events")
     return jsonify(data=data)
+
+@app.route('/simulation', methods=['POST'])
+@crossdomain(origin="*")
+def start_simulation():
+    simulation = request.json
+    # Start the simulation in the worker
+    start_simulation_task.delay(simulation['miners'],simulation['days'])
+    # Return simulation parameters
+    return jsonify(request.json)

@@ -10,3 +10,5 @@ module.exports = class SimulationController extends Controller
 
   blocks: ->
     @viewAndCollection 'Blocks', 'Miner'
+
+  new: -> @viewAndModel 'Simulation'

@@ -118,7 +118,6 @@ class Miner:
     BLOCK_RESPONSE = 2 # Here is the block you wanted!
     HEAD_NEW = 3 # I have a new chain head!
     BLOCK_NEW = 4 # Just mined a new block!
-    ACK = 5 # ACK message with no data
 
     # Network block rate a.k.a 1 block every ten minutes
     BLOCK_RATE = 1.0 / 600.0
@@ -285,9 +284,6 @@ class Miner:
         # Send the event
         self.send_event(to, Miner.BLOCK_RESPONSE, block)
 
-    def send_ack(self, to):
-        self.send_event(to, Miner.ACK, "")
-
     # Send certain event to a specific miner
     def send_event(self, to, action, payload):
         self.socket.send_event(to, action, payload)
@@ -306,18 +302,12 @@ class Miner:
                 # Send block if we have it
                 if data.payload in self.blocks:
                     self.send_block(data.payload, data.origin)
-                # Otherwise send ACK
-                else:
-                    self.send_ack(data.origin)
             elif data.action == Miner.BLOCK_RESPONSE:
                 self.notify_received_block(data.payload)
             elif data.action == Miner.HEAD_NEW:
                 # If we don't have the new head, we need to request it
                 if data.payload not in self.blocks:
                     self.request_block(data.payload)
-                # Otherwise send ack
-                else:
-                    self.send_ack(data.origin)
 
             #print("Miner %d - receives block %d at %7.4f" %(self.id, sha256(data), self.env.now))
 
@@ -357,7 +347,18 @@ class RedisUtils:
         for i in seq:
             r.sadd("days", i)
 
+    @staticmethod
+    def clear_db():
+        patterns = ["days*", "miners*", "links*", "events*", "blocks*", "ids*"]
+        for pattern in patterns:
+            keys = r.keys(pattern)
+            for key in keys: r.delete(key)
+
+
 class Simulator:
+
+    SIMULATION_ENDED = "SIMULATION_ENDED"
+    PUBSUB_CHANNEL = "/btcsimulator"
 
     @staticmethod
     def mine():
@@ -400,8 +401,7 @@ class Simulator:
         # Convert simulation days to seconds
         simulation_time = TimeUtils.get_seconds(days)
         try:
-            # Clear redis database before new simulation starts
-            r.flushdb()
+            RedisUtils.clear_db()
         except ConnectionError:
             return -1
         # Store in redis the simulation event names
@@ -441,10 +441,10 @@ class Simulator:
         # After simulation store every miner head, so their chain can be built again
         for miner in miners: r.hset("miners:" + repr(miner.id), "head", miner.chain_head)
         # Notify simulation ended
-        r.publish("/btcsimulator", "simulation ended")
+        r.publish(Simulator.PUBSUB_CHANNEL, Simulator.SIMULATION_ENDED)
         return 0
 
 if __name__ == '__main__':
-    Simulator.standard(6, 10)
+    Simulator.standard(16, 1)
 
 

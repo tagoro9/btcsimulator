@@ -1,12 +1,15 @@
 __author__ = 'victor'
 
+import logging
+
 from gevent import Greenlet, monkey
 from redis import StrictRedis
-from flask import Flask, render_template, jsonify, make_response
+from flask import Flask, jsonify
 from flask.ext.socketio import SocketIO, emit
-from btcsimulator.simulator.btcsimulator import Miner
-import logging
 from zato.redis_paginator import ZSetPaginator
+
+from btcsimulator.server.simulator.btcsimulator import Miner
+
 
 monkey.patch_all()
 
