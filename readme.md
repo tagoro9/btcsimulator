@@ -15,14 +15,14 @@ are feasible to perform on a real scenario.
 
 ##Prerequisites
 
-* Python 2.7.*. Most parts of the simulator are written in python. Higher versions of python are not supported since [Gevent](http://www.gevent.org/), which is used
+* **Python 2.7.*.** Most parts of the simulator are written in python. Higher versions of python are not supported since [Gevent](http://www.gevent.org/), which is used
 to support web sockets does not work well in higher Python versions
-* Celery. Asynchronous task job used to run simulations without blocking the server or the web app. It can be installed via pip `pip install celery`. More information
+* **Celery.** Asynchronous task job used to run simulations without blocking the server or the web app. It can be installed via pip `pip install celery`. More information
  about Celery can be found [here](http://www.celeryproject.org/).
-* Redis. Download and install [Redis](http://redis.io). The simulator uses redis as data store and as message broker to run background tasks in Celery workers.
-* Bower. [Bower](http://bower.io/) is a package manager for the web. It is used to manage all the web app dependencies (jQuery, Backbone, lodash,...). In order
+* **Redis.** Download and install [Redis](http://redis.io). The simulator uses redis as data store and as message broker to run background tasks in Celery workers.
+* **Bower.** [Bower](http://bower.io/) is a package manager for the web. It is used to manage all the web app dependencies (jQuery, Backbone, lodash,...). In order
 to install it you need to have [Node](http://nodejs.org/) and [Npm](https://www.npmjs.org/) up and running. `npm install -g bower`
-* Brunch. [Brunch](http://brunch.io/) is the build tool used to create the web app. As with bower, just run `npm install -g brunch`
+* **Brunch.** [Brunch](http://brunch.io/) is the build tool used to create the web app. As with bower, just run `npm install -g brunch`
 
 ##Getting started
 
@@ -53,7 +53,7 @@ Run the web server.
 
     python run_server.py
 
-By default server will listen on port `5000`, so just open a browser and type [http://localhost:5000](http://localhost:5000)
+By default server will listen on port `5000`, so just open a browser and type [http://localhost:5000](http://localhost:5000).
 If all went fine, the welcome screen should appear.
 
 ##Structure
