@@ -37,6 +37,10 @@ Install all python dependencies defined in `requirements.txt`.
 
     pip install -r requirements.txt
 
+Install brunch dependencies
+
+    npm install
+
 Install all bower dependencies.
 
     bower install
