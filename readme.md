@@ -15,12 +15,14 @@ are feasible to perform on a real scenario.
 
 ##Prerequisites
 
-* Python 2.7.*. Most parts of the simulator are written in python.
-* Redis. Download and install [Redis](http://redis.io). The simulator uses redis as data store. In order to work properly the application must
-connect to a redis server instance.
-* Brunch
-* Bower
-* Celery
+* Python 2.7.*. Most parts of the simulator are written in python. Higher versions of python are not supported since [Gevent](http://www.gevent.org/), which is used
+to support web sockets does not work well in higher Python versions
+* Celery. Asynchronous task job used to run simulations without blocking the server or the web app. It can be installed via pip `pip install celery`. More information
+ about Celery can be found [here](http://www.celeryproject.org/).
+* Redis. Download and install [Redis](http://redis.io). The simulator uses redis as data store and as message broker to run background tasks in Celery workers.
+* Bower. [Bower](http://bower.io/) is a package manager for the web. It is used to manage all the web app dependencies (jQuery, Backbone, lodash,...). In order
+to install it you need to have [Node](http://nodejs.org/) and [Npm](https://www.npmjs.org/) up and running. `npm install -g bower`
+* Brunch. [Brunch](http://brunch.io/) is the build tool used to create the web app. As with bower, just run `npm install -g brunch`
 
 ##Getting started
 
@@ -29,29 +31,39 @@ In order to run the simulator we need to have a redis server running.
     cd redis-2.8.x/src
     ./redis-server
 
-Install all python dependencies defined in `requirements.txt`
+**All the following commands must be run in the project root folder.**
 
-    pip install
+Install all python dependencies defined in `requirements.txt`.
 
-Compile the angular webapp using `grunt`.
+    pip install -r requirements.txt
 
-    cd btcsimulator/app
-    grunt
+Install all bower dependencies.
 
-Run the web server
+    bower install
 
-    python server.py
+Compile the web app using `brunch`.
 
-By default server will listen on port `3000`, so just open a browser and type [http://localhost:3000](http://localhost:3000)
+    brunch b
+
+Run the Celery worker.
+
+    celery -A run_server.celery worker --loglevel=info &
+
+Run the web server.
+
+    python run_server.py
+
+By default server will listen on port `5000`, so just open a browser and type [http://localhost:5000](http://localhost:5000)
+If all went fine, the welcome screen should appear.
 
 ##Structure
-This project consists on three main modules
+This project consists on three main modules:
 
-* An Angularjs webapp which controls simulation and displays data visualizations.
-* A webserver that communicates both with the app using websockets to send the data stored in redis and with the simulator
-using the redis pubsub messsage system in order to control the simulation.
-* A python library that drives the simulation using a [SimPy](http://simpy.readthedocs.com), a discrete-event simulation
-framework and stores every single piece of data or communication between nodes in redis for further analysis.
+* An [Backbone.js](http://backbonejs.org) webapp which controls simulation and displays data visualizations using [D3](http://d3js.org).
+* A web server that exposes a REST API with all the simulation information stored in Redis. This server is also in charge of launching simulations
+through the Celery worker and notifies any change of state to the web app using web sockets.
+* A python library that drives the simulation and stores every single piece of data or communication between nodes in redis for further analysis.
+ The simulation is run under [SimPy](http://simpy.readthedocs.com), a discrete-event simulation framework.
 
 ##Getting to know Bitcoin
 If you're new to Bitcoin and don't know much about that cryptocurrency that seems to be the talk of the town, here there
