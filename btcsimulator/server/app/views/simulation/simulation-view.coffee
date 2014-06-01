@@ -98,6 +98,7 @@ module.exports = class SimulationView extends View
 
 
   submitSimulation: ->
+    @date = moment()
     # Redirect to stats when simulation ends
     @subscribeEvent "redis", () =>
       Chaplin.utils.redirectTo('network')
@@ -110,6 +111,11 @@ module.exports = class SimulationView extends View
       dataType: 'json'
     })
 
+    @timeInterval = setInterval () =>
+      @$('#elapsed-time').text moment().diff @date, 'minutes'
+    , 1000 * 60
+
   remove: ->
     super
+    clearInterval @timeInterval
     @unstickit()
