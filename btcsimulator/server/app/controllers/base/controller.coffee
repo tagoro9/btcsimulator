@@ -79,10 +79,13 @@ module.exports = class Controller extends Chaplin.Controller
   # * Views are stored in views/<controller name>/<name>-view
   # * Models are stored in models/<name>
   viewAndModel: (view, model, modelParameters) ->
-    @waitForContinue () ->
+    @waitForContinue () =>
       if model?
         modelClass = require("models/#{model.toLowerCase()}").Model
-        @model = modelClass.findOrCreate modelParameters
+        if modelParameters?
+          @model = modelClass.findOrCreate modelParameters
+        else
+          @model = new modelClass
       viewClass = require("views/#{@getName()}/#{view.toLowerCase()}-view")
       @view = new viewClass @buildViewOptions()
 

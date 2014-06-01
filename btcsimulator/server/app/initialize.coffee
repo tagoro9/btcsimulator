@@ -2,6 +2,12 @@ Application = require 'application'
 routes = require 'routes'
 config = require 'config'
 
+socket = io.connect(config.api.host + config.api.root + config.api.socket)
+socket.on 'connect', () -> console.log("connected to server")
+socket.on 'redis', (data) ->
+  console.log data
+  Chaplin.mediator.publish "redis", data
+
 # Initialize the application on DOM ready event.
 $ ->
 	# Initialize internationalization first

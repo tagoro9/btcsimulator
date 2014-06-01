@@ -3,6 +3,7 @@ config =
 	api: 
 		host: 'http://localhost:5000'
 		root: '/'
+		socket: 'btcsimulator'
 	# Keys to be loaded in the mediator at application initialization
 	init:
 		keys: []

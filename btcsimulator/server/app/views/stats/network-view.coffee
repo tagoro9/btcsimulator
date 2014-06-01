@@ -1,5 +1,5 @@
 View = require 'views/base/view'
-template = require 'templates/simulation/network'
+template = require 'templates/stats/network'
 Summary = require 'models/summary'
 
 module.exports = class NetworkView extends View

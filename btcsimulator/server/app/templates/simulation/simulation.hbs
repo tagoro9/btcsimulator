@@ -1,1 +1,23 @@
-I'm the simulation
+<div class="row">
+    <div class="col-sm-offset-2 col-sm-8">
+        <div class="jumbotron">
+            <h1>
+                Configure simulation
+            </h1>
+            <p class="lead">Select your parameters and let the awesome begin...</p>
+            <form class="form" >
+                <p>Simulation mode</p>
+                <select class="select-block">
+                    <option value="0">Standard</option>
+                    <option value="1">51% Attack</option>
+                    <option value="1">Selfish attack</option>
+                </select>
+                <p>Number of miners: <span id="miners-number-hint"></span></p>
+                <div id="miners-number" class="ui-slider"></div>
+                <p>Number of days: <span id="days-number-hint"></span></p>
+                <div id="days-number" class="ui-slider"></div>
+                <p><a class="btn btn-lg btn-primary" id="start-simulation" href="simulation">Start</span></a></p>
+            </form>
+        </div>
+    </div>
+</div>

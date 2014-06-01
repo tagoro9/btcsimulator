@@ -1,5 +1,5 @@
 View = require 'views/base/view'
-template = require 'templates/simulation/blocks'
+template = require 'templates/stats/blocks'
 Summary = require 'models/summary'
 
 module.exports = class BlocksView extends View

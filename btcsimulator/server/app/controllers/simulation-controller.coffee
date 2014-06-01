@@ -4,11 +4,6 @@ module.exports = class SimulationController extends Controller
 
   name: 'SimulationController'
 
-  network: ->
-    @viewAndCollection 'Network', 'Miner'
+  layout: 'simple'
 
-
-  blocks: ->
-    @viewAndCollection 'Blocks', 'Miner'
-
-  new: -> @viewAndModel 'Simulation'
+  new: -> @viewAndModel 'Simulation', 'Simulation'
