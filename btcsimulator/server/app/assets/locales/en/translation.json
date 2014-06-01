@@ -37,6 +37,21 @@
             "head": "Chain head"
         }
     },
+    "configuration": {
+        "title": "Configure simulation",
+        "desc": "Select your parameters and let the awesome begin...",
+        "mode": "Simulation mode",
+        "modes": {
+            "standard": "Standard",
+            "selfish": "Selfish attack",
+            "51": "51% attack"
+        },
+        "miners": "Number of miners",
+        "days": "Number of days",
+        "start": "Start",
+        "progress": "Simulation in progress",
+        "time": "minutes so far"
+    },
     "global": {
         "minutes": "min",
         "seconds": "s"
