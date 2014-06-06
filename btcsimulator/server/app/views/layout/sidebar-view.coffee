@@ -15,7 +15,6 @@ module.exports = class SidebarView extends View
   changeURL: (url) ->
     path = "/" + url.path
     @$('a').removeClass 'active'
-    console.log path
     @$("a").each () -> $(@).addClass('active') if path.indexOf($(@).attr('href')) >= 0
 
   hashOrRoot: (path) =>

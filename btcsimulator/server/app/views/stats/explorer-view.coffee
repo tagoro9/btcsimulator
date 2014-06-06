@@ -11,8 +11,10 @@ module.exports = class Explorer extends CollectionView
   listSelector: '#blocks-container'
   itemView: BlockView
   events:
+    "keydown #block-search": "handleSearch"
     "click #next-chain-page": "handleNextChainPageClick"
   initialize: ->
+    @handleSearch = _.debounce @handleSearch, 100
     $('window').resize @adjustHeight()
     @shadowCollection = @collection
     @collection = new Collection()
@@ -25,6 +27,11 @@ module.exports = class Explorer extends CollectionView
     else
       @miners = new Miner.Collection()
       @miners.fetch(reset: true).done @handleHeadFetched
+      @handleSearch = _.debounce @handleSearch, 100
+
+  createFilter: (hash) -> (item, index) -> item.get('hash').indexOf(hash) >= 0
+
+  handleSearch: (e) ->  @filter @createFilter $(e.target).val()
 
   adjustHeight: -> @$('table').height @$el.height() - @$('#explorer-title').height() - 4 * @$('#explorer-controls').height() - @$('.table-header').height()
 

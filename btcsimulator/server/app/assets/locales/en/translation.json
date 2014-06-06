@@ -43,7 +43,8 @@
                 "miner": "Miner",
                 "size": "Size",
                 "time": "Time"
-            }
+            },
+            "search": "Search by hash"
         }
     },
     "configuration": {
