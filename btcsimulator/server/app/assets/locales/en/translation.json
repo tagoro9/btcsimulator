@@ -44,7 +44,8 @@
                 "size": "Size",
                 "time": "Time"
             },
-            "search": "Search by hash"
+            "search": "Search by hash",
+            "next": "Get more"
         }
     },
     "configuration": {

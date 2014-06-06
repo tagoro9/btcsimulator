@@ -15,7 +15,7 @@ module.exports = class Explorer extends CollectionView
     "click #next-chain-page": "handleNextChainPageClick"
   initialize: ->
     @handleSearch = _.debounce @handleSearch, 100
-    $('window').resize @adjustHeight()
+    $(window).on 'resize', @adjustHeight
     @shadowCollection = @collection
     @collection = new Collection()
     super
@@ -33,7 +33,7 @@ module.exports = class Explorer extends CollectionView
 
   handleSearch: (e) ->  @filter @createFilter $(e.target).val()
 
-  adjustHeight: -> @$('table').height @$el.height() - @$('#explorer-title').height() - 4 * @$('#explorer-controls').height() - @$('.table-header').height()
+  adjustHeight: => @$('table').height @$el.height() - @$('#explorer-title').height() - 4 * @$('#explorer-controls').height() - @$('.table-header').height() - 50
 
   handleHeadFetched: =>
     @shadowCollection.chainHead = @miners.getHead()
@@ -54,3 +54,7 @@ module.exports = class Explorer extends CollectionView
   getNextPage: ->
     @shadowCollection.chainHead = @shadowCollection.last().get('prev')
     @fetchData()
+
+  remove: ->
+    super
+    $(window).off 'resize'

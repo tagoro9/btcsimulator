@@ -25,13 +25,13 @@ module.exports = class BlocksView extends View
 
   initialize: ->
     super
+    $(window).on 'resize', @adjustHeight
     @summary = new Summary.Model()
     @summary.fetch reset: true
     @listenTo @, 'addedToDOM', @fetchData
     @listenTo @collection, 'reset', @renderChart
 
   fetchData: ->
-    @$('.chart-container').height 300 #@$('.row').height()
     @collection.fetch reset: true
 
   processData: (data) ->
@@ -42,8 +42,11 @@ module.exports = class BlocksView extends View
       }
     ]
 
+  adjustHeight: => @$('#blocks-chart').height @$('.chart-container').height()
+
   renderChart: () ->
     @chartData = @processData @collection.toJSON()
+    @adjustHeight()
     @createChartModel()
     @stickit @summary, @blockBindings
     unless @chart? then @blocksChart() else @chart.update()
@@ -73,3 +76,8 @@ module.exports = class BlocksView extends View
       d3.select("#blocks-chart svg").datum(@chartData).call chart
       nv.utils.windowResize(chart.update)
       chart
+
+  remove: ->
+    super
+    $(window).off 'resize'
+    @unstickit()

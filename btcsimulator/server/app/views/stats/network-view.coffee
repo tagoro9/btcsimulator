@@ -26,14 +26,17 @@ module.exports = class NetworkView extends View
 
 
   initialize: ->
+    $(window).on 'resize', @adjustHeight
     super
     @summary = new Summary.Model()
     @summary.fetch reset: true
     @listenTo @collection, 'reset', @createNetwork
     @listenTo @, 'addedToDOM', @fetchNetwork
 
+  adjustHeight: ->
+    @$('#network-chart').css 'height', @$('.chart-container').height()
+
   fetchNetwork: ->
-    @$('.chart-container').css 'height', @$('.row').height()
     @collection.fetch reset: true
 
   render: ->
@@ -47,6 +50,7 @@ module.exports = class NetworkView extends View
     @stickit @miner, @minerBindings
 
   createNetwork: () ->
+    @adjustHeight()
     that = @
     data = @collection.getNetwork()
     width = @$('#network-chart').width() - 40
@@ -149,4 +153,5 @@ module.exports = class NetworkView extends View
 
   remove: ->
     super
+    $(window).off 'resize'
     @unstickit()
