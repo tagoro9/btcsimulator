@@ -1,0 +1,22 @@
+<div id="explorer-title">
+    <h2>Block chain
+        <small>starting at <span id="head"></span></small>
+    </h2>
+</div>
+<table class="table table-hover table-bordered table-header">
+    <thead>
+        <tr>
+            <th>{{t "simulation.explorer.block.hash"}}</th>
+            <th>{{t "simulation.explorer.block.height"}}</th>
+            <th>{{t "simulation.explorer.block.miner"}}</th>
+            <th>{{t "simulation.explorer.block.size"}}</th>
+            <th>{{t "simulation.explorer.block.time"}}</th>
+        </tr>
+    </thead>
+</table>
+<table class="table table-hover explorer">
+    <tbody id="blocks-container"></tbody>
+</table>
+<div class="controls" id="explorer-controls">
+    <a class="btn btn-primary" id="next-chain-page"> Next Page</a>
+</div>

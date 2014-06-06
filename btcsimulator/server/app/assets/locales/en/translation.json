@@ -35,6 +35,15 @@
             "total": "Total blocks",
             "ratio": "1 block every",
             "head": "Chain head"
+        },
+        "explorer": {
+            "block": {
+                "hash": "Hash",
+                "height": "Height",
+                "miner": "Miner",
+                "size": "Size",
+                "time": "Time"
+            }
         }
     },
     "configuration": {

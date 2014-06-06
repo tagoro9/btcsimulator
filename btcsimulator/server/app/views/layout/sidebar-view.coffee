@@ -15,10 +15,11 @@ module.exports = class SidebarView extends View
   changeURL: (url) ->
     path = "/" + url.path
     @$('a').removeClass 'active'
-    @$("a[href='#{path}']").addClass 'active'
+    console.log path
+    @$("a").each () -> $(@).addClass('active') if path.indexOf($(@).attr('href')) >= 0
 
   hashOrRoot: (path) =>
-    if _.any @$('a'), ((ele) ->  "/#{path}" is $(ele).attr('href')) then path else ""
+    if _.any @$('a'), ((ele) ->  "/#{path}".indexOf($(ele).attr('href')) >= 0) then path else ""
 
   changeURLFirstTime: ->
       setTimeout () =>

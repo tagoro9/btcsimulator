@@ -10,3 +10,6 @@ module.exports = class StatsController extends Controller
 
   blocks: ->
     @viewAndCollection 'Blocks', 'Miner'
+
+  explorer: (params) ->
+    @viewAndCollection 'Explorer', 'Block', chainHead: params?.id

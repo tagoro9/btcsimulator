@@ -19,7 +19,7 @@ module.exports = class BlocksView extends View
         {
           name: 'href'
           observe: 'head'
-          onget: (value) -> "/simulation/blocks/#{value}" if value?
+          onGet: (value) -> "/stats/explorer/#{value}" if value?
         }
       ]
 

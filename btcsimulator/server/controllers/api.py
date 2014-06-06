@@ -155,11 +155,14 @@ def link():
 def chain(head):
     data = []
     count = 0
-    while head != None and count < 10:
+    while head != None and count < 100:
         block = get_block(head)
-        data.append(block)
+        if block['hash'] != "None":
+            data.append(block)
         prev = r.hget("blocks:" + head, "prev")
         head = prev
+        if head is None:
+            a = 1
         count += 1
     return jsonify(data=data)
 
