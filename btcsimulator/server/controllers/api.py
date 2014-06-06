@@ -148,15 +148,19 @@ def link():
     link = r.hgetall("links:" + id)
     return jsonify(data=link)
 
-
+# We just return first 10 blocks. Since it is a linked list it
+# is quite easy to get the next page
 @app.route('/chain/<string:head>', methods=['GET'])
 @crossdomain(origin='*')
 def chain(head):
     data = []
-    while head != None:
-        data.append(head)
+    count = 0
+    while head != None and count < 10:
+        block = get_block(head)
+        data.append(block)
         prev = r.hget("blocks:" + head, "prev")
         head = prev
+        count += 1
     return jsonify(data=data)
 
 @app.route('/summary')
