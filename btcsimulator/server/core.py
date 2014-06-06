@@ -2,7 +2,7 @@ __author__ = 'victor'
 from . import app
 import logging
 from celery import Celery
-from persistence import StrictRedis
+from redis import StrictRedis
 from datetime import timedelta
 from flask import make_response, request, current_app
 from functools import update_wrapper

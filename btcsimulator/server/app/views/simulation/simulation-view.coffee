@@ -14,6 +14,7 @@ module.exports = class SimulationView extends View
     super
     @model.set 'miners', 3
     @model.set 'days', 3
+    @model.set 'type', 'standard'
 
   render: ->
     super
@@ -98,6 +99,7 @@ module.exports = class SimulationView extends View
 
 
   submitSimulation: ->
+    @model.set 'type', @$('#simulation-type').val()
     @date = moment()
     # Redirect to stats when simulation ends
     @subscribeEvent "redis", () =>

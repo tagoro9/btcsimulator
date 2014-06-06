@@ -214,3 +214,24 @@ class Miner:
     def connect(miner, other_miner):
         miner.add_link(other_miner.id, 0.02)
         other_miner.add_link(miner.id, 0.02)
+
+
+class BadMiner(Miner):
+
+    # A bad miner (with more than 50% of network computing power
+    # will ignore all blocks no mine by self
+    def add_block(self, block):
+        # Add the block to the known blocks
+        self.blocks[sha256(block)] = block
+        # Store the block in redis
+        r.zadd("miners:" + str(self.id) + ":blocks", block.height, sha256(block))
+        # Announce block if chain_head isn't empty
+        if self.chain_head == "*":
+            self.chain_head = sha256(block)
+        # Ignore all blocks that are not mined by the bad miner
+        if block.miner_id != self.id:
+            return
+        # If block height is greater than chain head, update chain head and announce new head
+        if block.height > self.blocks[self.chain_head].height:
+            self.chain_head = sha256(block)
+            self.announce_block(block)

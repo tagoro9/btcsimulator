@@ -187,8 +187,8 @@ def start_simulation_options():
 @crossdomain(origin="*", headers=['Content-Type', 'Content-Disposition'])
 def start_simulation():
     simulation = request.json
-    logger.info("Starting %d days simulation with %d miners" %(simulation['days'], simulation['miners']))
+    logger.info("Starting %d days %s simulation with %d miners" %(simulation['days'], simulation['type'], simulation['miners']))
     # Start the simulation in the worker
-    start_simulation_task.delay(simulation['miners'],simulation['days'])
+    start_simulation_task.delay(simulation['miners'], simulation['days'], simulation['type'])
     # Return simulation parameters
     return jsonify(request.json)
