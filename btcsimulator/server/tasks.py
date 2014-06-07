@@ -8,3 +8,5 @@ def start_simulation_task(miners, days, type):
         Simulator.standard(miners, days)
     elif type == 'fifty-one':
         Simulator.fifty_one(miners, days)
+    elif type == 'selfish':
+        Simulator.selfish(miners, days)

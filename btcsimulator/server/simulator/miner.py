@@ -235,3 +235,48 @@ class BadMiner(Miner):
         if block.height > self.blocks[self.chain_head].height:
             self.chain_head = sha256(block)
             self.announce_block(block)
+
+
+class SelfishMiner(Miner):
+
+    # A selfish miner
+    def __init__(self, env, store, hashrate, verifyrate, seed_block):
+        self.chain_head_others = "*"
+        self.private_branch_len = 0
+        super.__init__(env, store, hashrate, verifyrate, seed_block)
+
+    def add_block(self, block):
+        # Save block
+        self.blocks[sha256(block)] = block
+        if self.chain_head == "*":
+            self.chain_head = sha256(block)
+            self.chain_head_others = sha256(block)
+            return
+        if block.miner_id == self.id and block.height > self.blocks[self.chain_head].height:
+            delta_prev = self.blocks[self.chain_head].height - self.blocks[self.chain_head_others].height
+            self.chain_head = sha256(block)
+            self.private_branch_len += 1
+            if delta_prev == 0 and self.private_branch_len == 2:
+                self.announce_block(self.chain_head)
+                self.private_branch_len = 0
+
+        if block.miner_id != self.id and block.height > self.blocks[self.chain_head_others].height:
+            delta_prev = self.blocks[self.chain_head].height - self.blocks[self.chain_head_others].height
+            self.chain_head_others = sha256(block)
+            if delta_prev <= 0:
+                self.chain_head = sha256(block)
+                self.private_branch_len = 0
+            elif delta_prev == 1:
+                self.announce_block(self.chain_head)
+            elif delta_prev == 2:
+                self.announce_block(self.chain_head)
+                self.private_branch_len = 0
+            else:
+                iter_hash = self.chain_head
+                temp = 0
+                if delta_prev >= 6:
+                    temp = 1
+                while self.blocks[iter_hash].height != block.height + temp:
+                    iter_hash = self.blocks[iter_hash].prev
+                self.announce_block(iter_hash)
+
