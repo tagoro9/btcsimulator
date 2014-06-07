@@ -1,5 +1,6 @@
 View = require 'views/base/view'
 template = require 'templates/layout/header'
+Summary = require('models/summary')
 
 module.exports = class HeaderView extends View
   tagName: 'header'
@@ -16,14 +17,15 @@ module.exports = class HeaderView extends View
     @changeURL path: url.path.split("/")[0]
 
 
+
   changeURL: (url) ->
     path = "/" + url.path
     @$('li').removeClass 'active'
-    @$("li a[href='#{path}']").parent().addClass 'active'
+    @$("li a").each () -> $(@).parent().addClass('active') if $(@).attr('href').indexOf(path) >= 0
 
   hashOrRoot: (path) =>
     path = path.split("/")[0]
-    if _.any @$('a'), ((ele) ->  "/#{path}" is $(ele).attr('href')) then path else ""
+    if _.any @$('a'), ((ele) ->  "/#{path}".indexOf($(ele).attr('href')) >= 0) then path else ""
 
   changeURLFirstTime: ->
       setTimeout () =>

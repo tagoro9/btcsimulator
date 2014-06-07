@@ -11,6 +11,12 @@
             "network": "Network",
             "blocks": "Blocks",
             "explorer": "Chain explorer"
+        },
+        "header": {
+            "simulation": "Simulation",
+            "stats": "Stats",
+            "gettingStarted": "Getting started",
+            "docs": "Docs"
         }
     },
     "simulation": {
