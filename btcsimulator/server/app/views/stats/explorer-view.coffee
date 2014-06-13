@@ -33,7 +33,7 @@ module.exports = class Explorer extends CollectionView
 
   handleSearch: (e) ->  @filter @createFilter $(e.target).val()
 
-  adjustHeight: => @$('table').height @$el.height() - @$('#explorer-title').height() - 4 * @$('#explorer-controls').height() - @$('.table-header').height() - 50
+  adjustHeight: => @$('table.explorer').height @$el.height() - @$('#explorer-title').height() - 4 * @$('#explorer-controls').height() - @$('.table-header').height() - 50
 
   handleHeadFetched: =>
     @shadowCollection.chainHead = @miners.getHead()
