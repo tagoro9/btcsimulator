@@ -5,7 +5,7 @@ from block import Block, sha256
 from persistence import *
 from network import Socket, Link, Event
 
-class Miner:
+class Miner(object):
 
     # Define action names
     BLOCK_REQUEST = 1 # Hey! I need a block!
@@ -161,6 +161,8 @@ class Miner:
 
     # Announce new head when block is added to the chain
     def announce_block(self, block):
+        if self.id == 8:
+            print("Announce %s - %s" %(block, self.blocks[block].miner_id))
         self.broadcast(Miner.HEAD_NEW, sha256(block))
 
     # Request a block to all links
@@ -243,7 +245,7 @@ class SelfishMiner(Miner):
     def __init__(self, env, store, hashrate, verifyrate, seed_block):
         self.chain_head_others = "*"
         self.private_branch_len = 0
-        super.__init__(env, store, hashrate, verifyrate, seed_block)
+        super(SelfishMiner, self).__init__( env, store, hashrate, verifyrate, seed_block)
 
     def add_block(self, block):
         # Save block
@@ -252,15 +254,15 @@ class SelfishMiner(Miner):
             self.chain_head = sha256(block)
             self.chain_head_others = sha256(block)
             return
-        if block.miner_id == self.id and block.height > self.blocks[self.chain_head].height:
+        if (block.miner_id == self.id) and (block.height > self.blocks[self.chain_head].height):
             delta_prev = self.blocks[self.chain_head].height - self.blocks[self.chain_head_others].height
             self.chain_head = sha256(block)
             self.private_branch_len += 1
-            if delta_prev == 0 and self.private_branch_len == 2:
+            if (delta_prev == 0) and (self.private_branch_len == 2):
                 self.announce_block(self.chain_head)
                 self.private_branch_len = 0
 
-        if block.miner_id != self.id and block.height > self.blocks[self.chain_head_others].height:
+        if (block.miner_id != self.id) and (block.height > self.blocks[self.chain_head_others].height):
             delta_prev = self.blocks[self.chain_head].height - self.blocks[self.chain_head_others].height
             self.chain_head_others = sha256(block)
             if delta_prev <= 0:
@@ -274,6 +276,7 @@ class SelfishMiner(Miner):
             else:
                 iter_hash = self.chain_head
                 temp = 0
+                print(delta_prev)
                 if delta_prev >= 6:
                     temp = 1
                 while self.blocks[iter_hash].height != block.height + temp:

@@ -1,7 +1,7 @@
 __author__ = 'victor'
 from persistence import *
 from block import Block
-from miner import Miner, BadMiner
+from miner import Miner, BadMiner, SelfishMiner
 import moment
 import simpy
 import time
@@ -151,7 +151,7 @@ class Simulator:
             miners.append(miner)
             connections[miner] = dict()
         # Create a bad miner
-        bad_miner = BadMiner(env, store, hashrates[i + 1] * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block)
+        bad_miner = SelfishMiner(env, store, hashrates[i + 1] * Miner.BLOCK_RATE, Miner.VERIFY_RATE, seed_block)
         miners.append(bad_miner)
         connections[bad_miner] = dict()
         # Randomly connect miners
@@ -170,6 +170,8 @@ class Simulator:
         env.run(until=simulation_time)
         end = time.time()
         print("Simulation took: %1.4f seconds" % (end - start))
+        print(miners[miners_number - 1].chain_head)
+        print(miners[miners_number - 1].chain_head_others)
         # Store in redis simulation days
         store_days(days)
         # After simulation store every miner head, so their chain can be built again
@@ -180,6 +182,6 @@ class Simulator:
 
 
 if __name__ == '__main__':
-    Simulator.selfish(3, 1)
+    Simulator.selfish(8, 1)
 
 
