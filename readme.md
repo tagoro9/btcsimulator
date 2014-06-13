@@ -51,7 +51,7 @@ Compile the web app using `brunch`.
 
 Run the Celery worker.
 
-    celery -A run_server.celery worker --loglevel=info &
+    celery -A run_server.celery worker --loglevel=info
 
 Run the web server.
 
