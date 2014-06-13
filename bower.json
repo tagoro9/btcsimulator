@@ -1,5 +1,5 @@
 {
-  "name": "whopper-staff",
+  "name": "btc-simulator",
   "version": "0.0.1",
   "main": "btcsimulator/server/public/javascripts/app.js",
   "ignore": [

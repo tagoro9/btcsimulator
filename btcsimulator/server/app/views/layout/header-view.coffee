@@ -21,7 +21,7 @@ module.exports = class HeaderView extends View
   changeURL: (url) ->
     path = "/" + url.path
     @$('li').removeClass 'active'
-    @$("li a").each () -> $(@).parent().addClass('active') if $(@).attr('href').indexOf(path) >= 0
+    @$("li a").each () -> $(@).parent().addClass('active') if $(@).attr('href').indexOf(path) >= 0 and path.length > 1
 
   hashOrRoot: (path) =>
     path = path.split("/")[0]
