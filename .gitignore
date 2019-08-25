@@ -1,13 +1,5 @@
-;;files to ignore
-
-;;extensions to ignore
-*.log
-*.pot
-*.pyc
-
-;;directories to ignore
-.idea/
-node_modules/
-bower_components/
-btcsimulator/server/public/
-tmp/
+__pycache__/
+.DS_Store
+*.mp4
+artifacts/*.mp4
+artifacts/*.png
